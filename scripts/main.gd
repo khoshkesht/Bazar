@@ -10,6 +10,8 @@ const CASE_REVIEW_BACKGROUND := preload("res://sources/pics/s5.png")
 const MAINPAGE_BACKGROUND := preload("res://sources/pics/mainpage.png")
 const DISABLED_CASE_BUTTON := preload("res://sources/pics/bt-disable.png")
 const HOVER_CASE_BUTTON := preload("res://sources/pics/bt-hover.png")
+const BOY_AVATAR := preload("res://sources/pics/boy.png")
+const GIRL_AVATAR := preload("res://sources/pics/girl.png")
 const WRAPPED_PACKAGE := preload("res://sources/pics/clue_wrapped_package.png")
 const SAVE_PATH := "user://player_progress.json"
 const CLUES := [
@@ -47,14 +49,19 @@ var earned_coins := 0
 var bazaar_completed := false
 var bazaar_stars := 0
 var player_name := ""
+var player_gender := ""
+var selected_gender := ""
 var main_case_count_label: Label
 var main_star_count_label: Label
 var main_coin_count_label: Label
 var main_player_name_label: Label
 var main_bazaar_star_label: Label
+var main_avatar: TextureRect
 var name_prompt: PanelContainer
 var name_input: LineEdit
 var name_error: Label
+var boy_gender_button: Button
+var girl_gender_button: Button
 var lock_was_visible := false
 var dialogue: PanelContainer
 var dialogue_name: Label
@@ -188,6 +195,13 @@ func build_main_menu() -> void:
 	main_player_name_label = build_main_stat_label(Vector2(184, 43), Vector2(148, 10))
 	main_bazaar_star_label = build_main_stat_label(Vector2(172, 476), Vector2(66, 34))
 	main_bazaar_star_label.add_theme_color_override("font_color", Color("2d2015"))
+	main_avatar = TextureRect.new()
+	main_avatar.position = Vector2(63, 18)
+	main_avatar.size = Vector2(86, 86)
+	main_avatar.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	main_avatar.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	main_avatar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	main_menu.add_child(main_avatar)
 	update_main_menu_stats()
 	build_name_prompt()
 
@@ -210,6 +224,17 @@ func update_main_menu_stats() -> void:
 	main_coin_count_label.text = to_persian_digits(str(earned_coins))
 	main_player_name_label.text = player_name
 	main_bazaar_star_label.text = to_persian_digits(str(bazaar_stars))
+	update_main_avatar()
+
+func update_main_avatar() -> void:
+	if player_gender.is_empty():
+		main_avatar.hide()
+		return
+	var crop := AtlasTexture.new()
+	crop.atlas = BOY_AVATAR if player_gender == "boy" else GIRL_AVATAR
+	crop.region = Rect2(230, 0, 800, 800)
+	main_avatar.texture = crop
+	main_avatar.show()
 
 func average_stars() -> int:
 	if completed_cases == 0:
@@ -223,9 +248,9 @@ func build_name_prompt() -> void:
 	name_prompt.anchor_right = 0.5
 	name_prompt.anchor_bottom = 0.5
 	name_prompt.offset_left = -290
-	name_prompt.offset_top = -170
+	name_prompt.offset_top = -210
 	name_prompt.offset_right = 290
-	name_prompt.offset_bottom = 170
+	name_prompt.offset_bottom = 210
 	name_prompt.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.88), Color(0.96, 0.74, 0.31, 1), 18, 3))
 	add_child(name_prompt)
 	var content := VBoxContainer.new()
@@ -255,6 +280,28 @@ func build_name_prompt() -> void:
 	name_input.add_theme_font_size_override("font_size", 20)
 	name_input.text_submitted.connect(save_player_name)
 	content.add_child(name_input)
+	var gender_title := Label.new()
+	gender_title.text = "آواتار کارآگاهت را انتخاب کن:"
+	gender_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	gender_title.text_direction = Control.TEXT_DIRECTION_RTL
+	gender_title.add_theme_font_size_override("font_size", 18)
+	gender_title.add_theme_color_override("font_color", Color("fff6e6"))
+	content.add_child(gender_title)
+	var gender_choices := HBoxContainer.new()
+	gender_choices.alignment = BoxContainer.ALIGNMENT_CENTER
+	gender_choices.add_theme_constant_override("separation", 14)
+	content.add_child(gender_choices)
+	boy_gender_button = Button.new()
+	boy_gender_button.custom_minimum_size = Vector2(145, 42)
+	boy_gender_button.add_theme_font_size_override("font_size", 18)
+	boy_gender_button.pressed.connect(select_player_gender.bind("boy"))
+	gender_choices.add_child(boy_gender_button)
+	girl_gender_button = Button.new()
+	girl_gender_button.custom_minimum_size = Vector2(145, 42)
+	girl_gender_button.add_theme_font_size_override("font_size", 18)
+	girl_gender_button.pressed.connect(select_player_gender.bind("girl"))
+	gender_choices.add_child(girl_gender_button)
+	refresh_gender_buttons()
 	name_error = Label.new()
 	name_error.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	name_error.text_direction = Control.TEXT_DIRECTION_RTL
@@ -269,6 +316,17 @@ func build_name_prompt() -> void:
 	content.add_child(confirm)
 	name_prompt.hide()
 
+func select_player_gender(gender: String) -> void:
+	selected_gender = gender
+	name_error.text = ""
+	refresh_gender_buttons()
+
+func refresh_gender_buttons() -> void:
+	if not boy_gender_button or not girl_gender_button:
+		return
+	boy_gender_button.text = "✓ پسر" if selected_gender == "boy" else "پسر"
+	girl_gender_button.text = "✓ دختر" if selected_gender == "girl" else "دختر"
+
 func save_player_name(submitted_name: String = "") -> void:
 	var chosen_name := submitted_name.strip_edges()
 	if chosen_name.is_empty():
@@ -276,7 +334,11 @@ func save_player_name(submitted_name: String = "") -> void:
 	if chosen_name.is_empty():
 		name_error.text = "لطفاً یک نام کوتاه بنویس."
 		return
+	if selected_gender.is_empty():
+		name_error.text = "لطفاً دختر یا پسر را انتخاب کن."
+		return
 	player_name = chosen_name.left(50)
+	player_gender = selected_gender
 	save_player_progress()
 	update_main_menu_stats()
 	name_prompt.hide()
@@ -294,6 +356,10 @@ func load_player_progress() -> void:
 	if not data is Dictionary:
 		return
 	player_name = str(data.get("player_name", "")).strip_edges().left(50)
+	player_gender = str(data.get("player_gender", ""))
+	if player_gender != "boy" and player_gender != "girl":
+		player_gender = ""
+	selected_gender = player_gender
 	completed_cases = clampi(int(data.get("completed_cases", 0)), 0, 5)
 	earned_stars = maxi(0, int(data.get("earned_stars", 0)))
 	earned_coins = maxi(0, int(data.get("earned_coins", 0)))
@@ -311,6 +377,7 @@ func save_player_progress() -> void:
 	var data := {
 		"version": 1,
 		"player_name": player_name,
+		"player_gender": player_gender,
 		"completed_cases": completed_cases,
 		"earned_stars": earned_stars,
 		"earned_coins": earned_coins,
@@ -331,7 +398,10 @@ func show_main_menu() -> void:
 	update_main_menu_stats()
 	main_menu.show()
 	main_menu.move_to_front()
-	if player_name.is_empty():
+	if player_name.is_empty() or player_gender.is_empty():
+		name_input.text = player_name
+		selected_gender = player_gender
+		refresh_gender_buttons()
 		name_prompt.show()
 		name_prompt.move_to_front()
 		name_input.grab_focus()
@@ -339,7 +409,7 @@ func show_main_menu() -> void:
 		name_prompt.hide()
 
 func begin_bazaar_case() -> void:
-	if player_name.is_empty():
+	if player_name.is_empty() or player_gender.is_empty():
 		name_prompt.show()
 		name_prompt.move_to_front()
 		return

@@ -1,6 +1,7 @@
-78098b89c88a74ebe8c20117b8754620
-::res://::1789644865
+9cad1ddce9e5a63143ba340c9520626b
+::res://::1789658561
 AGENTS.md::TextFile::-1::1789644865::0::1::::<><><>0<>0<><>::
+export_presets.cfg::TextFile::-1::1789657384::0::1::::<><><>0<>0<><>::
 ::res://data/::1789644203
 ::res://data/cases/::1789645111
 bazaar_001.json::JSON::-1::1789645111::0::1::::<><><>0<>0<><>::
@@ -23,8 +24,8 @@ source-proposal.md::TextFile::-1::1789655914::0::1::::<><><>0<>0<><>::
 ::res://scenes/::1789644413
 main.tscn::PackedScene::-1::1789644413::0::1::::<><><>0<>0<><>::res://scripts/main.gd
 ::res://scripts/::1789644470
-main.gd::GDScript::9039789884927234848::1789656338::0::1::::<>Control<><>0<>0<><>::
-::res://sources/::1789656454
+main.gd::GDScript::9039789884927234848::1789658487::0::1::::<>Control<><>0<>0<><>::
+::res://sources/::1789656605
 bgmusic.mp3::AudioStreamMP3::6217672721967291710::1789656429::1789656605::1::::<><><>0<>0<>8addaf2c9db266e8c6ad3303df8b6796<>res://.godot/imported/bgmusic.mp3-9b1f0d84a4956bc08b3408df38ef19aa.mp3str::
 ::res://sources/docs/::1789644203
 Scene 01-h.txt::TextFile::-1::1789639006::0::1::::<><><>0<>0<><>::

@@ -1,0 +1,408 @@
+# متن اولیهٔ پیوست کارفرما
+
+این متن برای حفظ منبع آرشیو شده است؛ پیشنهادها و ادعاهای آن الزاماً تأییدشده نیستند.
+
+برای چیزی مثل «راز بازار بزرگ» که بازی 2D، داستانی، کلیک‌محور و معمایی است، من بین چند گزینه بررسی کردم. اگر هدفمان این باشد که نسخه اول را سریع بسازیم و روی Android/iOS روان باشد، پیشنهاد اصلی من Godot است؛ اگر بخواهیم اکوسیستم بزرگ‌تر، asset/plugin زیاد و تیم‌پذیری بالاتر داشته باشیم، Unity 6 انتخاب مطمئن‌تری است. Unity همچنان مسیر رسمی کامل برای بازی‌های 2D و انتشار موبایل دارد.
+
+پیشنهاد من برای نسخه اول
+
+Godot + GDScript.
+
+دلیلش این است که بازی ما نیاز به physics سنگین، 3D یا shaderهای پیچیده ندارد. بیشتر با این‌ها سروکار داریم:
+
+Scene + Image + Animation + Dialogue + Click/Tap + State
+
+Godot برای چنین ساختاری خیلی سبک و سریع است، رایگان و open-source است و pipeline خروجی Android هم در نسخه‌های جدیدش کامل‌تر شده است. حتی محیط build اندروید Godot در ۲۰۲۶ به مرحله stable رسیده است.
+
+ساختار فنی نسخه اول من تقریباً این می‌شود:
+
+Godot
+│
+├── Main Menu
+│
+├── Case Select
+│
+└── Case01_Bazaar
+    │
+    ├── Scene 01 - مغازه
+    │   ├── Background
+    │   ├── Interactive Objects
+    │   ├── Clue System
+    │   └── Dialogue
+    │
+    ├── Scene 02 - نقشه بازار
+    │
+    ├── Scene 03 - گفتگو با مظنون‌ها
+    │
+    ├── Scene 04 - معمای رمز
+    │
+    └── Scene 05 - نتیجه‌گیری
+
+نکته مهم این است که محتوای بازی را داخل کد hard-code نمی‌کنم.
+
+مثلاً پرونده به شکل داده باشد:
+
+{
+  "case": "bazaar_001",
+  "title": "راز بازار بزرگ",
+  "clues": [
+    {
+      "id": "receipt",
+      "title": "رسید خرید"
+    },
+    {
+      "id": "shoe_print",
+      "title": "رد کفش"
+    }
+  ]
+}
+
+این بعداً خیلی مهم می‌شود؛ چون اگر بخواهی ۵۰ پرونده تولید کنی، لازم نیست برای هر پرونده بازی را از نو کدنویسی کنیم.
+
+ابزارهای لازم
+
+برای نسخه اولیه عملاً این stack کافی است:
+
+کار	ابزار پیشنهادی
+Game Engine	Godot
+زبان	GDScript
+طراحی UI	Figma
+تصاویر Background	Photoshop / Affinity / AI Image Generation
+شخصیت‌ها	AI + طراحی دستی نهایی
+انیمیشن ساده	Godot AnimationPlayer
+صدا	Audacity
+موسیقی	Asset / AI-generated
+مدیریت کد	Git + GitHub/GitLab
+دیتا مراحل	JSON
+Backend نسخه اول	هیچ‌کدام
+ذخیره Progress	Local JSON / Godot ConfigFile
+
+Backend را در MVP اصلاً اضافه نمی‌کنم.
+
+مثلاً:
+
+Install
+↓
+Case 1
+↓
+Save progress locally
+↓
+Unlock Case 2
+
+همه چیز روی گوشی اجرا شود.
+
+این باعث می‌شود هم development سریع‌تر شود، هم بازی بدون اینترنت کار کند.
+
+صفحه اول پرونده چطور ساخته می‌شود؟
+
+فرض کنیم این تصویر را داریم:
+
+┌───────────────────────────────────────────┐
+│                                           │
+│              بازار بزرگ                  │
+│                                           │
+│     🏺            📦          🕰️          │
+│                                           │
+│              🧾                           │
+│                                           │
+│       👞                                  │
+│                                           │
+└───────────────────────────────────────────┘
+
+هر شیء یک Area2D دارد.
+
+مثلاً رسید:
+
+extends Area2D
+
+func _input_event(viewport, event, shape_idx):
+    if event is InputEventScreenTouch and event.pressed:
+        GameState.add_clue("receipt")
+        show_clue()
+
+وقتی بچه روی رسید می‌زند:
+
+Tap
+↓
+Zoom animation
+↓
+"یک رسید پیدا کردی!"
+↓
+Add to notebook
+↓
+Play sound
+
+از نظر کدنویسی بسیار ساده است.
+
+یک سیستم مهم: Case Engine
+
+من بازی را به شکل مجموعه صحنه‌های مستقل نمی‌سازم.
+
+یک Case Engine می‌سازم.
+
+مثلاً:
+
+CASE ENGINE
+
+ClueSystem
+DialogueSystem
+PuzzleSystem
+InventorySystem
+NotebookSystem
+ProgressSystem
+HintSystem
+
+بعد هر پرونده فقط دیتا و asset جدید می‌شود.
+
+مثلاً پرونده بازار:
+
+CaseEngine
+      +
+Bazaar.json
+      +
+Bazaar Assets
+
+پرونده بعدی:
+
+CaseEngine
+      +
+Library.json
+      +
+Library Assets
+
+یعنی با جلو رفتن پروژه، هزینه تولید هر پرونده کاهش پیدا می‌کند.
+
+این از نظر محصول خیلی مهم‌تر از انتخاب موتور بازی است.
+
+سیستم Dialogue
+
+مثلاً شاگرد مغازه:
+
+{
+  "character": "Reza",
+  "dialogues": [
+    {
+      "text": "من ساعت پنج در انبار بودم."
+    },
+    {
+      "text": "بعد مستقیم به خانه رفتم."
+    }
+  ]
+}
+
+UI:
+
+┌────────────────────────────┐
+│           رضا              │
+│                            │
+│ من ساعت پنج در انبار بودم │
+│                            │
+│    [ادامه]                 │
+└────────────────────────────┘
+
+بعداً حتی می‌توانیم branch ایجاد کنیم:
+
+چه سؤالی می‌پرسی؟
+
+1. چرا رفتی انبار؟
+2. چه کسی آنجا بود؟
+3. این رسید متعلق به توست؟
+
+و جواب‌ها بر اساس اطلاعاتی که قبلاً پیدا کرده‌ای تغییر کنند.
+
+Notebook یا دفتر کارآگاه
+
+این را حتماً در نسخه اول می‌گذارم.
+
+بچه هر مدرکی پیدا کند وارد دفتر شود:
+
+📕 دفتر کارآگاه
+
+مدارک پیدا شده
+
+✅ رسید خرید
+✅ رد کفش
+❌ ؟؟؟؟
+✅ ساعت شکسته
+❌ ؟؟؟؟
+
+این خودش یک Progress Indicator خیلی خوب است.
+
+بدون اینکه بنویسیم:
+
+60% Complete
+
+بچه می‌فهمد هنوز دو مدرک پیدا نکرده.
+
+Hint System
+
+برای گروه ۷ تا ۱۴ سال خیلی ضروری است.
+
+مثلاً بچه ۶۰ ثانیه هیچ کاری نمی‌کند:
+
+💡 سرنخ می‌خواهی؟
+
+مرحله اول Hint:
+
+اطراف میز را بهتر نگاه کن.
+
+مرحله دوم:
+
+چیزی نزدیک ساعت افتاده.
+
+مرحله سوم:
+
+Highlight می‌کنیم:
+
+✨ 🧾
+
+به این ترتیب بچه گیر نمی‌کند.
+
+برای گرافیک چه کنیم؟
+
+برای MVP اصلاً نیاز نیست illustrator تمام‌وقت داشته باشیم.
+
+Workflow می‌تواند باشد:
+
+Concept
+↓
+AI Generated Scene
+↓
+Photoshop cleanup
+↓
+Separate layers
+↓
+Godot
+
+مثلاً بازار:
+
+background.png
+counter.png
+clock.png
+receipt.png
+shoeprint.png
+box.png
+character_reza.png
+
+بعد روی هرکدام hotspot قرار می‌دهیم.
+
+این مدل توسعه خیلی سریع است.
+
+Flutter + Flame چطور؟
+
+این گزینه هم جالب است.
+
+Flame یک موتور بازی روی Flutter است و Sprite، animation، gesture، game-loop و component system دارد و روی Android/iOS/Web/Desktop کار می‌کند.
+
+مثلاً برای tap هم API مستقیم دارد.
+
+مزیت بزرگش این است که قسمت‌های UI مثل:
+
+Profile
+Store
+Subscription
+Parent Dashboard
+Settings
+Login
+
+را با Flutter خیلی راحت می‌سازی و GameWidget داخل همان UI قرار می‌گیرد.
+
+بنابراین اگر محصول در آینده بیشتر شبیه:
+
+Educational App
++
+Mini Games
+
+باشد تا:
+
+Traditional Game
+
+من حتی Flutter + Flame را جدی بررسی می‌کنم.
+
+Unity چطور؟
+
+Unity هم کاملاً جواب می‌دهد.
+
+برای پروژه‌هایی مثل:
+
+بازی داستانی
+انیمیشن بیشتر
+cinematic
+particle
+character animation
+mini games متعدد
+
+Unity انتخاب بسیار خوبی است.
+
+و Unity 6 مسیر رسمی کامل برای:
+
+Sprite
+Physics 2D
+Tilemap
+Skeletal Animation
+UI
+Audio
+Mobile
+
+دارد.
+
+ولی برای MVP فعلی کمی بیشتر از چیزی است که نیاز داریم.
+
+اگر خودم بخواهم الان شروع کنم
+
+انتخاب من:
+
+Godot
+
+با:
+
+Godot 4.x
+GDScript
+Figma
+JSON-driven Cases
+Git
+Android first
+
+و معماری:
+
+            Mobile App
+                 │
+          ┌──────▼──────┐
+          │ Case Engine │
+          └──────┬──────┘
+                 │
+ ┌───────────────┼────────────────┐
+ │               │                │
+ ▼               ▼                ▼
+Clues         Dialogues          Puzzles
+ │               │                │
+ └───────────────┼────────────────┘
+                 │
+                 ▼
+             Case JSON
+                 │
+                 ▼
+            Game Assets
+MVP واقعی را خیلی کوچک نگه می‌دارم
+
+فقط:
+
+۱ پرونده
+
+۳ محیط
+
+۴ مظنون
+
+۵ سرنخ
+
+۲ مینی‌گیم
+
+۱ نتیجه‌گیری
+
+و زمان بازی:
+
+حدود ۱۵ دقیقه.
+
+اگر این ۱۵ دقیقه برای بچه جذاب باشد، آن‌وقت ساخت ۲۰ یا ۵۰ پرونده معنی پیدا می‌کند.
+
+از نظر حجم کار هم این MVP آن‌قدر کوچک هست که حتی می‌توانیم همین «راز بازار بزرگ» را به یک specification کامل تبدیل کنیم؛ تمام Sceneها، JSONها، State Machine و ساختار پروژه Godot را مشخص کنیم و بعد مستقیم کدنویسی نسخه قابل اجرا را شروع کنیم.

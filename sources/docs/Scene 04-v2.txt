@@ -1,0 +1,21 @@
+Use case: precise-object-edit.
+Asset type: Scene 04, BEFORE solving the cabinet puzzle, a 2D illustrated mobile detective game background for children ages 7–14.
+Input image 1 (sources/pics/s4.png): edit target and continuity reference. Regenerate this storage-room scene to correct the story while retaining its recognizable room, left doorway to the Iranian bazaar, wooden shelves, high small window, craft storage, warm lighting, and established color world. Single finished full-frame illustration, landscape 16:9.
+
+MANDATORY STORY STATE:
+The valuable metalwork object is missing from its decorative box in the SHOP. That empty decorative box stays in the shop, NOT in this storeroom. The apprentice has hidden the object in a wrapped package INSIDE A CLOSED LOCKED WOODEN CABINET in this storeroom. This is the BEFORE-UNLOCK background: the valuable object, package, distinctive wrapping paper and matching torn offcut MUST NOT be visible anywhere. They will be revealed later as separate game assets.
+
+COMPOSITION CHANGES:
+Replace the central pile of loose crates/open decorative-box lid and visible patterned wrapping paper with a clearly readable, closed, waist-to-shoulder-height traditional wooden storage cabinet in the center-right midground beneath/near the high window. Its complete front, closed door edges and brass puzzle-lock housing must be visible and unobstructed, large enough to tap on a phone. The cabinet should be the main investigative focal point without glow or UI. Give the brass lock housing four plain unmarked circular insets as a neutral mounting area; actual interactive symbols and their solution will be rendered later in the game. No numerals, letters or engraved answer sequence. No regular hanging key padlock.
+Keep a small clear worktable beside the cabinet, visibly empty of evidence; torn-paper overlay will be added only after unlocking. Keep ordinary closed shipping crates and neatly folded fabric at the margins. Remove the decorative box lid, all visible wrapping-paper scraps, the foreground inventory notebook, and loose red clue threads from the original. These must not accidentally introduce extra collectible evidence.
+Retain at most two subtle partial shoe scuffs on the floor suggesting arrival toward the cabinet, not a long trail of identical stamps and not a unique identity clue. Keep the approach to the cabinet open. Reduce foreground clutter and heavy blur; ensure the cabinet and small room remain readable at mobile size. No people.
+
+STYLE BIBLE (binding):
+PROJECT: راز بازار بزرگ; mobile detective educational adventure; target age 7–14.
+A polished, story-driven, child-friendly mystery game with a clearly Iranian identity.
+2D illustrated semi-cartoon art, soft shading, clean edges, readable shapes, medium detail. Warm, safe, adventurous, intelligent mystery, not preschool and never dark or frightening. Fixed landscape camera, slightly frontal or three-quarter view, 16:9.
+Traditional Tehran Grand Bazaar setting, Persian arches, wooden shelves, craft items, traditional lamps and restrained tile accents; authentic Iranian character without excessive decoration.
+Palette: warm beige, cream, wood brown, muted turquoise, soft red accents, brass/gold details. Warm indoor ambient lighting, sufficient contrast to identify objects, no neon, controlled saturation.
+Clear silhouettes, naturally integrated interactive focal objects, coherent design language for crates/shelves/lamps. No hyper-realistic object against stylized surroundings. Maintain the reference scene's architectural and color continuity while keeping a polished softly illustrated finish.
+No embedded UI, text labels, speech bubbles, captions, watermarks, split panels or decorative frame. No visual overcrowding, violence, horror, revealed hidden evidence, open cabinet or visible treasure. Background must support clean hotspot placement and later independent cabinet/evidence overlays.
+Output one corrected BEFORE-UNLOCK scene only.

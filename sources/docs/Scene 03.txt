@@ -1,0 +1,7 @@
+Create a high-quality 2D illustrated game scene for a mobile detective adventure game for children ages 7–14. Use the same polished semi-cartoon art style, soft shading, clear object readability, and child-friendly mystery atmosphere as the previous Grand Bazaar scenes. The image should be in landscape 16:9 format and feel like part of the same premium mobile game world.
+
+Show a conversation scene inside or near the same traditional bazaar shop. Include the shop environment in the background with warm wooden shelves, crafted objects, and bazaar details, but compose the scene so one character can clearly appear as the focus: the young shop assistant. He should look friendly but slightly nervous. His visual style should match the game world and Iranian setting.
+
+The scene should support a dialogue moment where the player questions the assistant. Include a few visible environmental details that suggest investigation, such as the counter area behind him, a shelf with missing space where a box used to be, and a partial view of the clue area from Scene 01.
+
+Do not include UI, dialogue boxes, or text inside the image. Keep the scene composition clear and readable, with the character visible but not overly large or dramatic.

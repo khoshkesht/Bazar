@@ -1,0 +1,58 @@
+PROJECT: راز بازار بزرگ
+FORMAT: Mobile game
+GENRE: Detective educational adventure
+TARGET AGE: 7–14
+VISUAL GOAL: A polished, story-driven, child-friendly mystery game with a clearly Iranian identity
+
+CORE ART DIRECTION
+- Style: 2D illustrated, semi-cartoon, polished mobile game art
+- Tone: mysterious, warm, safe, adventurous, intelligent
+- Audience fit: suitable for children and young teens; not too childish, not too dark
+- Rendering: soft shading, clean edges, readable shapes, medium detail
+- Readability: objects must be easy to identify on a phone screen
+- Composition: clean, uncluttered, gameplay-friendly, with room for interactive hotspots
+- Camera: fixed landscape composition, slightly frontal or three-quarter front view
+- Aspect Ratio: 16:9 landscape
+
+WORLD & CULTURAL IDENTITY
+- Setting: Iranian urban environments with a focus on traditional spaces
+- Visual inspiration: Grand Bazaar of Tehran, old Iranian shops, Persian architectural details
+- Cultural cues: arches, wooden shelves, craft items, traditional lamps, tile accents, market corridors
+- The setting should feel authentically Iranian without being overloaded with decoration
+
+COLOR LANGUAGE
+- Main palette: warm beige, cream, wood brown, muted turquoise, soft red accents, brass/gold details
+- Lighting: warm indoor ambient light
+- Contrast: enough contrast for clue visibility, but never harsh or neon
+- Saturation: colorful but controlled; premium game feel, not oversaturated
+
+OBJECT DESIGN RULES
+- Important objects must have clear silhouettes
+- Interactive clues should be visually distinct but naturally placed
+- Repeated props (boxes, shelves, lamps, containers, signs) should follow a consistent design language
+- No object should look hyper-realistic compared to the rest of the world
+
+CHARACTERS
+- Characters should match the same semi-cartoon world style
+- Friendly and expressive, but not exaggerated like preschool cartoons
+- Clothing and appearance can subtly reflect Iranian setting
+- Characters should not visually dominate clue scenes unless the scene requires dialogue
+
+SCENE RULES
+- No embedded UI
+- No text labels inside the art
+- No speech bubbles
+- No visual overcrowding
+- Background art must support investigation gameplay
+- Each scene should contain clear focal points and clean object separation
+
+MOOD
+- Mystery without fear
+- Investigation without violence
+- Discovery, curiosity, logic, and exploration
+
+TECHNICAL ART INTENT
+- Backgrounds should be usable in a game engine
+- Important clue objects should ideally be separable or easy to isolate
+- Scenes should support hotspot placement for tap interaction
+- Maintain consistency across all scenes in color palette, architecture, rendering style, and object design

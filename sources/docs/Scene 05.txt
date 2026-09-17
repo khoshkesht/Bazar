@@ -1,0 +1,7 @@
+Create a high-quality 2D illustrated game scene for a mobile detective adventure game for children ages 7–14. Use the same visual style and world as the previous scenes: polished semi-cartoon mobile game art, soft shading, clean readability, child-friendly mystery tone, and premium quality. Landscape 16:9 format.
+
+Show a calm investigation summary scene in a detective workspace connected to the bazaar case. This could be a small office corner, a desk at the shop, or a quiet room where the player reviews evidence. Include a wooden desk, collected clue items, a notebook, a map of the bazaar, and a few organized investigation materials. The environment should still feel culturally Iranian and visually connected to the Grand Bazaar setting.
+
+This scene is for the deduction moment where the player reviews clues and decides what happened. Important evidence items should be visible on or around the desk: the receipt, the broken watch, the red thread, and a note or route map. The scene should suggest logic and discovery rather than action.
+
+Do not include UI, text labels, or speech bubbles. Keep the composition clean, readable, and suitable as a final case-review scene in a mobile game.

@@ -1,0 +1,7 @@
+Create a high-quality 2D illustrated background for a mobile detective adventure game for children ages 7–14. Use the same established visual style as the previous scenes: polished semi-cartoon, soft shading, clean readable objects, child-friendly mystery tone, and premium mobile game quality. Landscape 16:9 format.
+
+Show a small storage room behind a traditional shop in the Grand Bazaar of Tehran. Include stacked boxes, fabric bundles, wooden shelves, craft materials, and a dim but warm indoor atmosphere. The room should feel slightly cramped and secretive, but never scary. It must feel like part of the same Iranian bazaar world.
+
+This is an investigation scene where the player searches for additional clues. Include clue-friendly details such as a partially hidden decorative box lid, a piece of wrapping material, a misplaced inventory notebook, and a footprint or scuff mark near a stack of boxes. These clues should be naturally integrated but readable enough for hotspot gameplay.
+
+Avoid clutter that makes the scene hard to read. Do not include UI, labels, or speech bubbles. Keep the scene gameplay-friendly and visually consistent with the earlier scenes.

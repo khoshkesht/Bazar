@@ -1,0 +1,7 @@
+Create a high-quality 2D illustrated background for a mobile detective adventure game for children ages 7–14. Use the exact same visual world and style as the established Grand Bazaar detective game: polished semi-cartoon rendering, soft shading, clean readable shapes, child-friendly mystery tone, and a premium mobile game look. Landscape 16:9 format.
+
+Show a corridor inside the Grand Bazaar of Tehran just outside the shop from the first scene. Include Persian arches, hanging lamps, shop entrances, wooden doors, traditional market textures, and a narrow pathway through the bazaar. The corridor should feel connected to the same shop and same world. Keep the scene visually rich but not cluttered.
+
+This scene is used to investigate where the suspect may have gone after leaving the shop. Include subtle clue-friendly details such as a small red thread caught on a corner, faint footprints leading in one direction, a dropped wrapping paper near a wall, and a slightly open side passage. These clues should be integrated naturally but still readable for mobile players.
+
+Do not include UI, text labels, or speech bubbles. Keep the composition clean, readable, and suitable for interactive tap-based investigation.

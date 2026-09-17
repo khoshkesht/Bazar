@@ -1,0 +1,7 @@
+Create a high-quality 2D illustrated background for a mobile detective adventure game for children ages 7–14. Use a polished semi-cartoon style with soft shading, clean silhouettes, strong readability, and a child-friendly mystery atmosphere. The image should be in landscape 16:9 format and feel like a premium mobile game background. The setting must clearly feel Iranian.
+
+Show the interior of a traditional shop inside the Grand Bazaar of Tehran. Include warm wooden shelves, metal craft items, decorative boxes, a shop counter, hanging lamps, and a partial view toward the bazaar corridor. The mood should be curious and mysterious, but safe and inviting.
+
+This is the first investigation scene of the case “راز بازار بزرگ”. Important clue objects must be naturally placed and clearly readable: a paper receipt near the counter, a broken clock or pocket watch, a red thread caught on a wooden edge, a faint shoe print on the floor, and an empty decorative box that looks recently moved. These clues should feel like part of the environment but should be visually noticeable enough to become interactive hotspots later.
+
+Keep the composition clean and gameplay-friendly. Avoid excessive clutter. Do not include UI, text labels, speech bubbles, or large foreground characters blocking the clues.

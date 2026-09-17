@@ -382,7 +382,7 @@ func build_name_prompt() -> void:
 	title.text = "سلام، کارآگاه!"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	title.text_direction = Control.TEXT_DIRECTION_RTL
-	title.add_theme_font_size_override("font_size", 30)
+	title.add_theme_font_size_override("font_size", 35)
 	title.add_theme_color_override("font_color", Color("ffe09a"))
 	content.add_child(title)
 	var description := Label.new()
@@ -390,7 +390,7 @@ func build_name_prompt() -> void:
 	description.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	description.text_direction = Control.TEXT_DIRECTION_RTL
 	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	description.add_theme_font_size_override("font_size", 20)
+	description.add_theme_font_size_override("font_size", 25)
 	description.add_theme_color_override("font_color", Color("fff6e6"))
 	content.add_child(description)
 	name_input = LineEdit.new()
@@ -399,14 +399,14 @@ func build_name_prompt() -> void:
 	name_input.alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	name_input.text_direction = Control.TEXT_DIRECTION_RTL
 	name_input.custom_minimum_size = Vector2(360, 48)
-	name_input.add_theme_font_size_override("font_size", 20)
+	name_input.add_theme_font_size_override("font_size", 25)
 	name_input.text_submitted.connect(save_player_name)
 	content.add_child(name_input)
 	var gender_title := Label.new()
 	gender_title.text = "آواتار کارآگاهت را انتخاب کن:"
 	gender_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	gender_title.text_direction = Control.TEXT_DIRECTION_RTL
-	gender_title.add_theme_font_size_override("font_size", 18)
+	gender_title.add_theme_font_size_override("font_size", 22)
 	gender_title.add_theme_color_override("font_color", Color("fff6e6"))
 	content.add_child(gender_title)
 	var gender_choices := HBoxContainer.new()
@@ -415,12 +415,12 @@ func build_name_prompt() -> void:
 	content.add_child(gender_choices)
 	boy_gender_button = Button.new()
 	boy_gender_button.custom_minimum_size = Vector2(145, 42)
-	boy_gender_button.add_theme_font_size_override("font_size", 18)
+	boy_gender_button.add_theme_font_size_override("font_size", 22)
 	boy_gender_button.pressed.connect(select_player_gender.bind("boy"))
 	gender_choices.add_child(boy_gender_button)
 	girl_gender_button = Button.new()
 	girl_gender_button.custom_minimum_size = Vector2(145, 42)
-	girl_gender_button.add_theme_font_size_override("font_size", 18)
+	girl_gender_button.add_theme_font_size_override("font_size", 22)
 	girl_gender_button.pressed.connect(select_player_gender.bind("girl"))
 	gender_choices.add_child(girl_gender_button)
 	refresh_gender_buttons()
@@ -433,7 +433,7 @@ func build_name_prompt() -> void:
 	var confirm := Button.new()
 	confirm.text = "شروع ماجرا"
 	confirm.custom_minimum_size = Vector2(210, 46)
-	confirm.add_theme_font_size_override("font_size", 18)
+	confirm.add_theme_font_size_override("font_size", 22)
 	confirm.pressed.connect(save_player_name.bind(""))
 	content.add_child(confirm)
 	name_prompt.hide()
@@ -565,13 +565,13 @@ func build_header() -> void:
 	clue_count_label = Label.new()
 	clue_count_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	clue_count_label.text_direction = Control.TEXT_DIRECTION_RTL
-	clue_count_label.add_theme_font_size_override("font_size", 17)
+	clue_count_label.add_theme_font_size_override("font_size", 19)
 	clue_count_label.add_theme_color_override("font_color", Color("f5ead8"))
 	content.add_child(clue_count_label)
 	score_label = Label.new()
 	score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	score_label.text_direction = Control.TEXT_DIRECTION_RTL
-	score_label.add_theme_font_size_override("font_size", 17)
+	score_label.add_theme_font_size_override("font_size", 19)
 	score_label.add_theme_color_override("font_color", Color("ffe09a"))
 	content.add_child(score_label)
 	update_clue_count()
@@ -586,7 +586,7 @@ func build_header() -> void:
 	home_button.offset_top = 24
 	home_button.offset_right = -28
 	home_button.offset_bottom = 72
-	home_button.add_theme_font_size_override("font_size", 17)
+	home_button.add_theme_font_size_override("font_size", 19)
 	home_button.pressed.connect(return_to_main_menu)
 	add_child(home_button)
 
@@ -652,13 +652,13 @@ func build_footer() -> void:
 	var reset := Button.new()
 	reset.text = "شروع دوباره"
 	reset.custom_minimum_size = Vector2(145, 44)
-	reset.add_theme_font_size_override("font_size", 17)
+	reset.add_theme_font_size_override("font_size", 19)
 	reset.pressed.connect(reset_investigation)
 	row.add_child(reset)
 	notebook_button = Button.new()
 	notebook_button.text = "دفتر کارآگاه"
 	notebook_button.custom_minimum_size = Vector2(155, 44)
-	notebook_button.add_theme_font_size_override("font_size", 17)
+	notebook_button.add_theme_font_size_override("font_size", 19)
 	notebook_button.disabled = true
 	notebook_button.pressed.connect(open_notebook)
 	row.add_child(notebook_button)
@@ -682,7 +682,7 @@ func build_clue_panel() -> void:
 	modal_title = Label.new()
 	modal_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	modal_title.text_direction = Control.TEXT_DIRECTION_RTL
-	modal_title.add_theme_font_size_override("font_size", 30)
+	modal_title.add_theme_font_size_override("font_size", 35)
 	modal_title.add_theme_color_override("font_color", Color("ffe09a"))
 	box.add_child(modal_title)
 	modal_description = Label.new()
@@ -690,14 +690,14 @@ func build_clue_panel() -> void:
 	modal_description.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	modal_description.text_direction = Control.TEXT_DIRECTION_RTL
 	modal_description.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	modal_description.add_theme_font_size_override("font_size", 20)
+	modal_description.add_theme_font_size_override("font_size", 25)
 	modal_description.add_theme_color_override("font_color", Color("fff6e6"))
 	box.add_child(modal_description)
 	modal_close_button = Button.new()
 	modal_close_button.text = "ادامهٔ جست‌وجو"
 	modal_close_button.custom_minimum_size = Vector2(190, 46)
 	modal_close_button.alignment = HORIZONTAL_ALIGNMENT_CENTER
-	modal_close_button.add_theme_font_size_override("font_size", 18)
+	modal_close_button.add_theme_font_size_override("font_size", 22)
 	modal_close_button.pressed.connect(close_clue_panel)
 	box.add_child(modal_close_button)
 	build_notebook()
@@ -833,7 +833,7 @@ func build_notebook() -> void:
 	intro.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	intro.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	intro.text_direction = Control.TEXT_DIRECTION_RTL
-	intro.add_theme_font_size_override("font_size", 18)
+	intro.add_theme_font_size_override("font_size", 22)
 	intro.add_theme_color_override("font_color", Color("57351e"))
 	notebook.add_child(intro)
 	notebook_clues_text = Label.new()
@@ -843,7 +843,7 @@ func build_notebook() -> void:
 	notebook_clues_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	notebook_clues_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	notebook_clues_text.text_direction = Control.TEXT_DIRECTION_RTL
-	notebook_clues_text.add_theme_font_size_override("font_size", 17)
+	notebook_clues_text.add_theme_font_size_override("font_size", 19)
 	notebook_clues_text.add_theme_color_override("font_color", Color("57351e"))
 	notebook.add_child(notebook_clues_text)
 	update_notebook_code_text()
@@ -853,7 +853,7 @@ func build_notebook() -> void:
 	notebook_talk_button.position = Vector2(260, 535)
 	notebook_talk_button.size = Vector2(220, 42)
 	notebook_talk_button.custom_minimum_size = Vector2(210, 46)
-	notebook_talk_button.add_theme_font_size_override("font_size", 18)
+	notebook_talk_button.add_theme_font_size_override("font_size", 22)
 	notebook_talk_button.pressed.connect(open_dialogue)
 	notebook.add_child(notebook_talk_button)
 	# Set positioned buttons after parenting: otherwise Android's RTL locale
@@ -865,7 +865,7 @@ func build_notebook() -> void:
 	close.position = Vector2(260, 595)
 	close.size = Vector2(220, 42)
 	close.custom_minimum_size = Vector2(195, 46)
-	close.add_theme_font_size_override("font_size", 18)
+	close.add_theme_font_size_override("font_size", 22)
 	close.pressed.connect(close_notebook)
 	notebook.add_child(close)
 	close.position = Vector2(260, 595)
@@ -926,7 +926,7 @@ func show_notebook_score_confirmation() -> void:
 		message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		message.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		message.text_direction = Control.TEXT_DIRECTION_RTL
-		message.add_theme_font_size_override("font_size", 20)
+		message.add_theme_font_size_override("font_size", 25)
 		message.add_theme_color_override("font_color", Color("fff6e6"))
 		content.add_child(message)
 		var buttons := HBoxContainer.new()
@@ -936,13 +936,13 @@ func show_notebook_score_confirmation() -> void:
 		var cancel := Button.new()
 		cancel.text = "نه، خودم حل می‌کنم"
 		cancel.custom_minimum_size = Vector2(205, 46)
-		cancel.add_theme_font_size_override("font_size", 17)
+		cancel.add_theme_font_size_override("font_size", 19)
 		cancel.pressed.connect(func() -> void: score_confirmation.hide())
 		buttons.add_child(cancel)
 		var confirm := Button.new()
 		confirm.text = "بله، ۵ سکه کم شود"
 		confirm.custom_minimum_size = Vector2(205, 46)
-		confirm.add_theme_font_size_override("font_size", 17)
+		confirm.add_theme_font_size_override("font_size", 19)
 		confirm.pressed.connect(confirm_notebook_score_cost)
 		buttons.add_child(confirm)
 	score_confirmation.show()
@@ -1001,7 +1001,7 @@ func build_dialogue() -> void:
 	content.add_child(dialogue_text)
 	dialogue_next_button = Button.new()
 	dialogue_next_button.custom_minimum_size = Vector2(180, 48)
-	dialogue_next_button.add_theme_font_size_override("font_size", 18)
+	dialogue_next_button.add_theme_font_size_override("font_size", 22)
 	dialogue_next_button.pressed.connect(show_next_dialogue)
 	content.add_child(dialogue_next_button)
 
@@ -1069,7 +1069,7 @@ func show_time_question() -> void:
 		var button := Button.new()
 		button.text = answer
 		button.custom_minimum_size = Vector2(125, 46)
-		button.add_theme_font_size_override("font_size", 18)
+		button.add_theme_font_size_override("font_size", 22)
 		button.pressed.connect(answer_time_question.bind(answer))
 		time_answers.add_child(button)
 
@@ -1160,7 +1160,7 @@ func add_route_choice(text: String, is_correct: bool) -> void:
 	var button := Button.new()
 	button.text = text
 	button.custom_minimum_size = Vector2(300, 43)
-	button.add_theme_font_size_override("font_size", 18)
+	button.add_theme_font_size_override("font_size", 22)
 	button.pressed.connect(choose_route.bind(is_correct))
 	route_choices.add_child(button)
 
@@ -1172,7 +1172,7 @@ func choose_route(is_correct: bool) -> void:
 		var next := Button.new()
 		next.text = "با افراد مرتبط گفت‌وگو کنیم"
 		next.custom_minimum_size = Vector2(290, 46)
-		next.add_theme_font_size_override("font_size", 18)
+		next.add_theme_font_size_override("font_size", 22)
 		next.pressed.connect(start_assistant_dialogue)
 		route_choices.add_child(next)
 		prompt_label.text = "مسیر درست پیدا شد. قدم بعدی: بررسی انبار و رمز کمد."
@@ -1222,7 +1222,7 @@ func build_assistant_dialogue() -> void:
 	content.add_child(assistant_text)
 	assistant_next_button = Button.new()
 	assistant_next_button.custom_minimum_size = Vector2(180, 46)
-	assistant_next_button.add_theme_font_size_override("font_size", 18)
+	assistant_next_button.add_theme_font_size_override("font_size", 22)
 	assistant_next_button.pressed.connect(show_next_assistant_line)
 	content.add_child(assistant_next_button)
 
@@ -1279,7 +1279,7 @@ func build_lock_panel() -> void:
 	lock_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	lock_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	lock_status.text_direction = Control.TEXT_DIRECTION_RTL
-	lock_status.add_theme_font_size_override("font_size", 20)
+	lock_status.add_theme_font_size_override("font_size", 25)
 	lock_status.add_theme_color_override("font_color", Color("fff6e6"))
 	content.add_child(lock_status)
 	lock_sequence_label = Label.new()
@@ -1297,13 +1297,13 @@ func build_lock_panel() -> void:
 		var button := Button.new()
 		button.text = "نشانهٔ " + ["", "۱", "۲", "۳", "۴"][symbol]
 		button.custom_minimum_size = Vector2(135, 52)
-		button.add_theme_font_size_override("font_size", 17)
+		button.add_theme_font_size_override("font_size", 19)
 		button.pressed.connect(choose_symbol.bind(symbol))
 		symbols.add_child(button)
 	var clear := Button.new()
 	clear.text = "پاک کردن ترتیب"
 	clear.custom_minimum_size = Vector2(185, 42)
-	clear.add_theme_font_size_override("font_size", 17)
+	clear.add_theme_font_size_override("font_size", 19)
 	clear.pressed.connect(clear_lock_sequence)
 	content.add_child(clear)
 
@@ -1358,7 +1358,7 @@ func build_packaging_panel() -> void:
 	packaging_title.text = "بستهٔ داخل کمد"
 	packaging_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	packaging_title.text_direction = Control.TEXT_DIRECTION_RTL
-	packaging_title.add_theme_font_size_override("font_size", 30)
+	packaging_title.add_theme_font_size_override("font_size", 35)
 	packaging_title.add_theme_color_override("font_color", Color("d9efbd"))
 	content.add_child(packaging_title)
 	packaging_preview = TextureRect.new()
@@ -1393,7 +1393,7 @@ func reset_packaging_stage() -> void:
 	var inspect := Button.new()
 	inspect.text = "بسته را بررسی کردم"
 	inspect.custom_minimum_size = Vector2(250, 46)
-	inspect.add_theme_font_size_override("font_size", 18)
+	inspect.add_theme_font_size_override("font_size", 22)
 	inspect.pressed.connect(show_packaging_question)
 	packaging_choices.add_child(inspect)
 
@@ -1412,7 +1412,7 @@ func add_packaging_choice(text: String, is_correct: bool) -> void:
 	var button := Button.new()
 	button.text = text
 	button.custom_minimum_size = Vector2(350, 43)
-	button.add_theme_font_size_override("font_size", 18)
+	button.add_theme_font_size_override("font_size", 22)
 	button.pressed.connect(choose_packaging.bind(is_correct))
 	packaging_choices.add_child(button)
 
@@ -1427,7 +1427,7 @@ func choose_packaging(is_correct: bool) -> void:
 		var review := Button.new()
 		review.text = "دوباره بسته را ببین"
 		review.custom_minimum_size = Vector2(250, 46)
-		review.add_theme_font_size_override("font_size", 18)
+		review.add_theme_font_size_override("font_size", 22)
 		review.pressed.connect(reset_packaging_stage)
 		packaging_choices.add_child(review)
 		return
@@ -1438,7 +1438,7 @@ func choose_packaging(is_correct: bool) -> void:
 	var next := Button.new()
 	next.text = "مرحلهٔ بعد: مرور پرونده"
 	next.custom_minimum_size = Vector2(270, 46)
-	next.add_theme_font_size_override("font_size", 18)
+	next.add_theme_font_size_override("font_size", 22)
 	next.pressed.connect(start_case_review)
 	packaging_choices.add_child(next)
 	prompt_label.text = "بسته‌بندی هم بررسی شد. قدم بعدی: مرور همهٔ مدرک‌ها و نتیجه‌گیری."
@@ -1480,7 +1480,7 @@ func build_case_panel() -> void:
 	case_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	case_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	case_status.text_direction = Control.TEXT_DIRECTION_RTL
-	case_status.add_theme_font_size_override("font_size", 18)
+	case_status.add_theme_font_size_override("font_size", 22)
 	case_status.add_theme_color_override("font_color", Color("d9efbd"))
 	content.add_child(case_status)
 	case_question = Label.new()
@@ -1505,7 +1505,7 @@ func show_case_question() -> void:
 		var button := Button.new()
 		button.text = current.choices[index]
 		button.custom_minimum_size = Vector2(540, 42)
-		button.add_theme_font_size_override("font_size", 17)
+		button.add_theme_font_size_override("font_size", 19)
 		button.pressed.connect(choose_case_answer.bind(index))
 		case_choices.add_child(button)
 
@@ -1544,7 +1544,7 @@ func show_case_ending() -> void:
 	var home := Button.new()
 	home.text = "بازگشت به صفحهٔ اصلی"
 	home.custom_minimum_size = Vector2(255, 46)
-	home.add_theme_font_size_override("font_size", 18)
+	home.add_theme_font_size_override("font_size", 22)
 	home.pressed.connect(return_to_main_menu)
 	case_choices.add_child(home)
 	prompt_label.text = "پرونده با بررسی شواهد و پذیرفتن مسئولیت حل شد."

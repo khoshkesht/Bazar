@@ -4,7 +4,9 @@
 
 [node name="Main" type="Control"]
 layout_mode = 3
-layout_direction = 2
+; Coordinates and anchors are always authored in the 1280×720 LTR canvas.
+; Persian text direction is set on individual text controls in main.gd.
+layout_direction = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0

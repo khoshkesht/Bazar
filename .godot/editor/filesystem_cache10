@@ -1,7 +1,9 @@
 9cad1ddce9e5a63143ba340c9520626b
-::res://::1789670884
+::res://::1789671954
 AGENTS.md::TextFile::-1::1789644865::0::1::::<><><>0<>0<><>::
 export_presets.cfg::TextFile::-1::1789669557::0::1::::<><><>0<>0<><>::
+phone-current.png::CompressedTexture2D::9135289541355902205::1789671579::1789671649::1::::<><><>0<>0<>64d5820c6d157ea128ddee30f6620374<>res://.godot/imported/phone-current.png-294a742c0e329bd992566703e3dac78c.ctex::
+phone-notebook.png::CompressedTexture2D::2726067203536823453::1789671540::1789671649::1::::<><><>0<>0<>b4ef92773e8b4338f4ea8be9dedb4199<>res://.godot/imported/phone-notebook.png-a318ae6e81c4b83cedfe07d324a63b02.ctex::
 ::res://data/::1789644203
 ::res://data/cases/::1789645111
 bazaar_001.json::JSON::-1::1789645111::0::1::::<><><>0<>0<><>::
@@ -22,9 +24,9 @@ PROJECT-CONTEXT.md::TextFile::-1::1789642847::0::1::::<><><>0<>0<><>::
 README.md::TextFile::-1::1789641788::0::1::::<><><>0<>0<><>::
 source-proposal.md::TextFile::-1::1789655914::0::1::::<><><>0<>0<><>::
 ::res://scenes/::1789644413
-main.tscn::PackedScene::-1::1789669380::0::1::::<><><>0<>0<><>::res://scripts/main.gd
+main.tscn::PackedScene::-1::1789671308::0::1::::<><><>0<>0<><>::res://scripts/main.gd
 ::res://scripts/::1789664890
-main.gd::GDScript::9039789884927234848::1789670870::0::1::::<>Control<><>0<>0<><>::
+main.gd::GDScript::9039789884927234848::1789672144::0::1::::<>Control<><>0<>0<><>::
 ::res://sources/::1789656605
 bgmusic.mp3::AudioStreamMP3::6217672721967291710::1789656429::1789656605::1::::<><><>0<>0<>8addaf2c9db266e8c6ad3303df8b6796<>res://.godot/imported/bgmusic.mp3-9b1f0d84a4956bc08b3408df38ef19aa.mp3str::
 ::res://sources/docs/::1789644203

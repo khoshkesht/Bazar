@@ -41,6 +41,8 @@ var notebook: Control
 var notebook_button: Button
 var notebook_talk_button: Button
 var notebook_return_texture: Texture2D
+var notebook_debug_layer: CanvasLayer
+var notebook_debug_label: Label
 var intro_active := false
 var main_menu: Control
 var score_confirmation: PanelContainer
@@ -147,6 +149,10 @@ const CASE_QUESTIONS := [
 ]
 
 func _ready() -> void:
+	# Keep the canvas coordinate system independent from Persian text direction.
+	# All positioned/anchored UI uses the 1280×720 LTR reference; labels and
+	# text inputs explicitly opt into RTL where Persian shaping is required.
+	layout_direction = Control.LAYOUT_DIRECTION_LTR
 	DisplayServer.screen_set_orientation(DisplayServer.SCREEN_LANDSCAPE)
 	setup_audio()
 	load_player_progress()
@@ -787,6 +793,7 @@ func _process(delta: float) -> void:
 	for button in hotspot_buttons:
 		if not button.disabled:
 			button.modulate = Color(1.0, 0.96, 0.24, 0.62 + (sin(pulse_time * 2.4) + 1.0) * 0.16)
+	update_notebook_debug_overlay()
 
 func _input(event: InputEvent) -> void:
 	# The visual card buttons are painted into the menu background. Some Android
@@ -800,19 +807,17 @@ func _input(event: InputEvent) -> void:
 
 func build_notebook() -> void:
 	notebook = Control.new()
-	notebook.anchor_left = 0.5
-	notebook.anchor_top = 0.5
-	notebook.anchor_right = 0.5
-	notebook.anchor_bottom = 0.5
-	notebook.offset_left = -500
-	notebook.offset_top = -300
-	notebook.offset_right = 500
-	notebook.offset_bottom = 300
+	# The notebook artwork already fills the complete 1280×720 reference canvas.
+	# Give its interactive layer that same explicit rectangle instead of centering
+	# a nested control: inherited RTL layout had collapsed this container on Android.
+	notebook.layout_direction = Control.LAYOUT_DIRECTION_LTR
+	notebook.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	notebook.visible = false
 	add_child(notebook)
 	var title := Label.new()
+	title.layout_direction = Control.LAYOUT_DIRECTION_LTR
 	title.text = "دفتر کارآگاه"
-	title.position = Vector2(420, 100)
+	title.position = Vector2(610, 150)
 	title.size = Vector2(360, 42)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	title.text_direction = Control.TEXT_DIRECTION_RTL
@@ -820,8 +825,9 @@ func build_notebook() -> void:
 	title.add_theme_color_override("font_color", Color("57351e"))
 	notebook.add_child(title)
 	var intro := Label.new()
+	intro.layout_direction = Control.LAYOUT_DIRECTION_LTR
 	intro.text = "سرنخ‌های پرونده"
-	intro.position = Vector2(440, 128)
+	intro.position = Vector2(630, 195)
 	intro.size = Vector2(360, 30)
 	intro.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	intro.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
@@ -830,7 +836,8 @@ func build_notebook() -> void:
 	intro.add_theme_color_override("font_color", Color("57351e"))
 	notebook.add_child(intro)
 	notebook_clues_text = Label.new()
-	notebook_clues_text.position = Vector2(430, 165)
+	notebook_clues_text.layout_direction = Control.LAYOUT_DIRECTION_LTR
+	notebook_clues_text.position = Vector2(600, 235)
 	notebook_clues_text.size = Vector2(400, 235)
 	notebook_clues_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	notebook_clues_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
@@ -840,22 +847,66 @@ func build_notebook() -> void:
 	notebook.add_child(notebook_clues_text)
 	update_notebook_code_text()
 	notebook_talk_button = Button.new()
+	notebook_talk_button.layout_direction = Control.LAYOUT_DIRECTION_LTR
 	notebook_talk_button.text = "با استاد حرف بزنیم"
-	notebook_talk_button.position = Vector2(165, 430)
+	notebook_talk_button.position = Vector2(260, 535)
 	notebook_talk_button.size = Vector2(220, 42)
 	notebook_talk_button.custom_minimum_size = Vector2(210, 46)
 	notebook_talk_button.add_theme_font_size_override("font_size", 18)
 	notebook_talk_button.pressed.connect(open_dialogue)
 	notebook.add_child(notebook_talk_button)
+	# Set positioned buttons after parenting: otherwise Android's RTL locale
+	# mirrors their X coordinate during attachment.
+	notebook_talk_button.position = Vector2(260, 535)
 	var close := Button.new()
+	close.layout_direction = Control.LAYOUT_DIRECTION_LTR
 	close.text = "بستن دفتر"
-	close.position = Vector2(165, 485)
+	close.position = Vector2(260, 595)
 	close.size = Vector2(220, 42)
 	close.custom_minimum_size = Vector2(195, 46)
 	close.add_theme_font_size_override("font_size", 18)
 	close.pressed.connect(close_notebook)
 	notebook.add_child(close)
+	close.position = Vector2(260, 595)
+	build_notebook_debug_overlay()
 	build_dialogue()
+
+func build_notebook_debug_overlay() -> void:
+	# This diagnostic layer does not inherit the notebook's layout. It lets us
+	# inspect the actual Android geometry from a screenshot when the notebook UI
+	# itself is missing or clipped.
+	notebook_debug_layer = CanvasLayer.new()
+	notebook_debug_layer.layer = 100
+	add_child(notebook_debug_layer)
+	notebook_debug_label = Label.new()
+	notebook_debug_label.layout_direction = Control.LAYOUT_DIRECTION_LTR
+	notebook_debug_label.text_direction = Control.TEXT_DIRECTION_LTR
+	notebook_debug_label.position = Vector2(18, 18)
+	notebook_debug_label.size = Vector2(850, 285)
+	notebook_debug_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	notebook_debug_label.add_theme_font_size_override("font_size", 15)
+	notebook_debug_label.add_theme_color_override("font_color", Color("eaffdf"))
+	notebook_debug_label.add_theme_stylebox_override("normal", panel_style(Color(0.02, 0.08, 0.03, 0.92), Color("63ff8c"), 8, 2))
+	notebook_debug_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	notebook_debug_label.hide()
+	notebook_debug_layer.add_child(notebook_debug_label)
+
+func update_notebook_debug_overlay() -> void:
+	if not notebook_debug_label:
+		return
+	var is_notebook_visible := notebook != null and notebook.visible
+	notebook_debug_label.visible = is_notebook_visible
+	if not is_notebook_visible:
+		return
+	var lines: Array[String] = []
+	lines.append("NOTEBOOK DEBUG  |  viewport=" + str(get_viewport().get_visible_rect()))
+	lines.append("notebook: vis=%s pos=%s size=%s global=%s z=%d" % [notebook.visible, notebook.position, notebook.size, notebook.get_global_rect(), notebook.z_index])
+	lines.append("anchors=(%.2f, %.2f, %.2f, %.2f) offsets=(%.1f, %.1f, %.1f, %.1f) dir=%d" % [notebook.anchor_left, notebook.anchor_top, notebook.anchor_right, notebook.anchor_bottom, notebook.offset_left, notebook.offset_top, notebook.offset_right, notebook.offset_bottom, notebook.layout_direction])
+	for child in notebook.get_children():
+		if child is Control:
+			var control := child as Control
+			lines.append("%s: vis=%s pos=%s size=%s global=%s z=%d" % [control.name, control.visible, control.position, control.size, control.get_global_rect(), control.z_index])
+	notebook_debug_label.text = "\n".join(lines)
 
 func open_notebook() -> void:
 	if lock_panel != null and lock_panel.visible and not cabinet_unlocked:

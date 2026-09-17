@@ -226,6 +226,7 @@ func build_main_menu() -> void:
 	add_child(main_menu)
 	for position_x in [310, 535, 768, 1001]:
 		var locked_lines := TextureButton.new()
+		locked_lines.layout_direction = Control.LAYOUT_DIRECTION_LTR
 		locked_lines.texture_disabled = LOCKED_CASE_LINES
 		locked_lines.position = Vector2(position_x - 4, 177)
 		locked_lines.size = Vector2(208, 214)
@@ -235,6 +236,7 @@ func build_main_menu() -> void:
 		locked_lines.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		main_menu.add_child(locked_lines)
 		var disabled_button := TextureButton.new()
+		disabled_button.layout_direction = Control.LAYOUT_DIRECTION_LTR
 		disabled_button.texture_disabled = DISABLED_CASE_BUTTON
 		disabled_button.position = Vector2(position_x, 507)
 		disabled_button.size = Vector2(210, 72)
@@ -243,6 +245,7 @@ func build_main_menu() -> void:
 		disabled_button.disabled = true
 		main_menu.add_child(disabled_button)
 	var start := TextureButton.new()
+	start.layout_direction = Control.LAYOUT_DIRECTION_LTR
 	# مختصات دکمهٔ آبیِ «شروع پرونده» روی کارت اول در تصویر ۱۶:۹ صفحهٔ اصلی است.
 	start.position = Vector2(67, 507)
 	start.size = Vector2(230, 72)
@@ -260,28 +263,35 @@ func build_main_menu() -> void:
 	main_bazaar_star_label = build_main_stat_label(Vector2(172, 476), Vector2(66, 34))
 	main_bazaar_star_label.add_theme_color_override("font_color", Color("2d2015"))
 	main_avatar = TextureRect.new()
+	main_avatar.layout_direction = Control.LAYOUT_DIRECTION_LTR
 	main_avatar.position = Vector2(63, 18)
 	main_avatar.size = Vector2(86, 86)
 	main_avatar.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	main_avatar.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	main_avatar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	main_menu.add_child(main_avatar)
+	var system_controls := HBoxContainer.new()
+	system_controls.layout_direction = Control.LAYOUT_DIRECTION_LTR
+	system_controls.position = Vector2(1154, 658)
+	system_controls.add_theme_constant_override("separation", 8)
+	main_menu.add_child(system_controls)
 	music_toggle_button = Button.new()
-	music_toggle_button.position = Vector2(1158, 664)
-	music_toggle_button.size = Vector2(44, 40)
+	music_toggle_button.layout_direction = Control.LAYOUT_DIRECTION_LTR
+	music_toggle_button.custom_minimum_size = Vector2(48, 46)
 	music_toggle_button.add_theme_font_size_override("font_size", 25)
 	music_toggle_button.pressed.connect(toggle_music)
-	main_menu.add_child(music_toggle_button)
+	system_controls.add_child(music_toggle_button)
 	update_music_toggle_button()
 	exit_button = Button.new()
+	exit_button.layout_direction = Control.LAYOUT_DIRECTION_LTR
 	exit_button.text = "×"
 	exit_button.tooltip_text = "خروج از بازی"
-	exit_button.position = Vector2(1210, 664)
-	exit_button.size = Vector2(44, 40)
+	exit_button.custom_minimum_size = Vector2(48, 46)
 	exit_button.add_theme_font_size_override("font_size", 28)
 	exit_button.pressed.connect(exit_game)
-	main_menu.add_child(exit_button)
+	system_controls.add_child(exit_button)
 	var credit_link := LinkButton.new()
+	credit_link.layout_direction = Control.LAYOUT_DIRECTION_LTR
 	credit_link.text = "by: m.khoshkesht"
 	credit_link.uri = "mailto:mo.khoshkesht@gmail.com"
 	credit_link.tooltip_text = "ارسال ایمیل به mo.khoshkesht@gmail.com"

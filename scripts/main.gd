@@ -111,6 +111,8 @@ var music_toggle_button: Button
 var music_enabled := true
 var exit_button: Button
 
+const BAZAAR_CASE_BUTTON_RECT := Rect2(67, 507, 230, 72)
+
 const DIALOGUE_LINES := [
 	{"speaker": "استاد قلم‌زن", "text": "آفرین، کارآگاه! حسابی گشتی. من ساعت ۴:۴۵، درست قبل از بیرون رفتنم، پلاک را توی جعبه دیدم."},
 	{"speaker": "کارآگاه", "text": "پس ساعت جیبی می‌گوید پلاک کی گم شده؟"},
@@ -218,8 +220,9 @@ func build_scene() -> void:
 
 func build_main_menu() -> void:
 	main_menu = Control.new()
+	main_menu.layout_direction = Control.LAYOUT_DIRECTION_LTR
 	main_menu.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	main_menu.mouse_filter = Control.MOUSE_FILTER_STOP
+	main_menu.mouse_filter = Control.MOUSE_FILTER_PASS
 	add_child(main_menu)
 	for position_x in [310, 535, 768, 1001]:
 		var locked_lines := TextureButton.new()
@@ -253,7 +256,7 @@ func build_main_menu() -> void:
 	main_coin_count_label = build_main_stat_label(Vector2(452, 43), Vector2(106, 38))
 	main_star_count_label = build_main_stat_label(Vector2(649, 43), Vector2(72, 38))
 	main_case_count_label = build_main_stat_label(Vector2(823, 43), Vector2(73, 38))
-	main_player_name_label = build_main_stat_label(Vector2(184, 43), Vector2(148, 10))
+	main_player_name_label = build_main_stat_label(Vector2(154, 40), Vector2(178, 40))
 	main_bazaar_star_label = build_main_stat_label(Vector2(172, 476), Vector2(66, 34))
 	main_bazaar_star_label.add_theme_color_override("font_color", Color("2d2015"))
 	main_avatar = TextureRect.new()
@@ -309,6 +312,7 @@ func exit_game() -> void:
 
 func build_main_stat_label(position_value: Vector2, size_value: Vector2) -> Label:
 	var label := Label.new()
+	label.layout_direction = Control.LAYOUT_DIRECTION_LTR
 	label.position = position_value
 	label.size = size_value
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -755,6 +759,16 @@ func _process(delta: float) -> void:
 	for button in hotspot_buttons:
 		if not button.disabled:
 			button.modulate = Color(1.0, 0.96, 0.24, 0.62 + (sin(pulse_time * 2.4) + 1.0) * 0.16)
+
+func _input(event: InputEvent) -> void:
+	# The visual card buttons are painted into the menu background. Some Android
+	# devices deliver the touch to the full-screen menu control instead of its
+	# transparent TextureButton, so start the unlocked case from that same touch.
+	if not main_menu or not main_menu.visible:
+		return
+	if event is InputEventScreenTouch and event.pressed and BAZAAR_CASE_BUTTON_RECT.has_point(event.position):
+		begin_bazaar_case()
+		get_viewport().set_input_as_handled()
 
 func build_notebook() -> void:
 	notebook = Control.new()

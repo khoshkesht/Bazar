@@ -12,6 +12,7 @@ const DISABLED_CASE_BUTTON := preload("res://sources/pics/bt-disable.png")
 const HOVER_CASE_BUTTON := preload("res://sources/pics/bt-hover.png")
 const BOY_AVATAR := preload("res://sources/pics/boy.png")
 const GIRL_AVATAR := preload("res://sources/pics/girl.png")
+const LOCKED_CASE_LINES := preload("res://sources/pics/locked-case-lines.png")
 const WRAPPED_PACKAGE := preload("res://sources/pics/clue_wrapped_package.png")
 const SAVE_PATH := "user://player_progress.json"
 const CLUES := [
@@ -170,6 +171,15 @@ func build_main_menu() -> void:
 	main_menu.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(main_menu)
 	for position_x in [310, 535, 768, 1001]:
+		var locked_lines := TextureButton.new()
+		locked_lines.texture_disabled = LOCKED_CASE_LINES
+		locked_lines.position = Vector2(position_x - 4, 177)
+		locked_lines.size = Vector2(208, 214)
+		locked_lines.ignore_texture_size = true
+		locked_lines.stretch_mode = TextureButton.STRETCH_SCALE
+		locked_lines.disabled = true
+		locked_lines.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		main_menu.add_child(locked_lines)
 		var disabled_button := TextureButton.new()
 		disabled_button.texture_disabled = DISABLED_CASE_BUTTON
 		disabled_button.position = Vector2(position_x, 507)

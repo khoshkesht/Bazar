@@ -11,6 +11,7 @@ const MAINPAGE_BACKGROUND := preload("res://sources/pics/mainpage.png")
 const DISABLED_CASE_BUTTON := preload("res://sources/pics/bt-disable.png")
 const HOVER_CASE_BUTTON := preload("res://sources/pics/bt-hover.png")
 const WRAPPED_PACKAGE := preload("res://sources/pics/clue_wrapped_package.png")
+const SAVE_PATH := "user://player_progress.json"
 const CLUES := [
 	{"id": "receipt", "title": "رسید کاغذی", "description": "یه رسید تازه کنار پیشخوان افتاده! شاید بگوید چه کسی و چه وقتی خرید کرده.", "position": Vector2(0.36, 0.36), "size": Vector2(0.075, 0.10)},
 	{"id": "thread", "title": "نخ قرمز", "description": "اِ... یه نخ قرمز به پیشخوان گیر کرده. شاید از لباس یا بستهٔ کسی جا مانده باشد.", "position": Vector2(0.45, 0.40), "size": Vector2(0.045, 0.14)},
@@ -40,6 +41,17 @@ var intro_active := false
 var main_menu: Control
 var score_confirmation: PanelContainer
 var score := 50
+var completed_cases := 0
+var earned_stars := 0
+var earned_coins := 0
+var player_name := ""
+var main_case_count_label: Label
+var main_star_count_label: Label
+var main_coin_count_label: Label
+var main_player_name_label: Label
+var name_prompt: PanelContainer
+var name_input: LineEdit
+var name_error: Label
 var lock_was_visible := false
 var dialogue: PanelContainer
 var dialogue_name: Label
@@ -116,6 +128,7 @@ const CASE_QUESTIONS := [
 ]
 
 func _ready() -> void:
+	load_player_progress()
 	generate_lock_code()
 	generate_time_delay()
 	build_scene()
@@ -157,8 +170,8 @@ func build_main_menu() -> void:
 		main_menu.add_child(disabled_button)
 	var start := TextureButton.new()
 	# مختصات دکمهٔ آبیِ «شروع پرونده» روی کارت اول در تصویر ۱۶:۹ صفحهٔ اصلی است.
-	start.position = Vector2(73, 518)
-	start.size = Vector2(215, 48)
+	start.position = Vector2(67, 507)
+	start.size = Vector2(230, 72)
 	start.texture_hover = HOVER_CASE_BUTTON
 	start.texture_pressed = HOVER_CASE_BUTTON
 	start.ignore_texture_size = true
@@ -166,6 +179,126 @@ func build_main_menu() -> void:
 	start.tooltip_text = "شروع راز بازار بزرگ"
 	start.pressed.connect(begin_bazaar_case)
 	main_menu.add_child(start)
+	main_coin_count_label = build_main_stat_label(Vector2(452, 43), Vector2(106, 38))
+	main_star_count_label = build_main_stat_label(Vector2(649, 43), Vector2(72, 38))
+	main_case_count_label = build_main_stat_label(Vector2(823, 43), Vector2(73, 38))
+	main_player_name_label = build_main_stat_label(Vector2(184, 43), Vector2(148, 10))
+	update_main_menu_stats()
+	build_name_prompt()
+
+func build_main_stat_label(position_value: Vector2, size_value: Vector2) -> Label:
+	var label := Label.new()
+	label.position = position_value
+	label.size = size_value
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.text_direction = Control.TEXT_DIRECTION_RTL
+	label.add_theme_font_size_override("font_size", 21)
+	label.add_theme_color_override("font_color", Color("fff6e6"))
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	main_menu.add_child(label)
+	return label
+
+func update_main_menu_stats() -> void:
+	main_case_count_label.text = "%d/۵" % completed_cases
+	main_star_count_label.text = str(earned_stars)
+	main_coin_count_label.text = str(earned_coins)
+	main_player_name_label.text = player_name
+
+func build_name_prompt() -> void:
+	name_prompt = PanelContainer.new()
+	name_prompt.anchor_left = 0.5
+	name_prompt.anchor_top = 0.5
+	name_prompt.anchor_right = 0.5
+	name_prompt.anchor_bottom = 0.5
+	name_prompt.offset_left = -290
+	name_prompt.offset_top = -170
+	name_prompt.offset_right = 290
+	name_prompt.offset_bottom = 170
+	name_prompt.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.88), Color(0.96, 0.74, 0.31, 1), 18, 3))
+	add_child(name_prompt)
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 14)
+	name_prompt.add_child(content)
+	var title := Label.new()
+	title.text = "سلام، کارآگاه!"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	title.text_direction = Control.TEXT_DIRECTION_RTL
+	title.add_theme_font_size_override("font_size", 30)
+	title.add_theme_color_override("font_color", Color("ffe09a"))
+	content.add_child(title)
+	var description := Label.new()
+	description.text = "اسمت را بنویس تا روی کارت کارآگاهت نشان بدهیم."
+	description.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	description.text_direction = Control.TEXT_DIRECTION_RTL
+	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	description.add_theme_font_size_override("font_size", 20)
+	description.add_theme_color_override("font_color", Color("fff6e6"))
+	content.add_child(description)
+	name_input = LineEdit.new()
+	name_input.placeholder_text = "نام کارآگاه"
+	name_input.max_length = 50
+	name_input.alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	name_input.text_direction = Control.TEXT_DIRECTION_RTL
+	name_input.custom_minimum_size = Vector2(360, 48)
+	name_input.add_theme_font_size_override("font_size", 20)
+	name_input.text_submitted.connect(save_player_name)
+	content.add_child(name_input)
+	name_error = Label.new()
+	name_error.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	name_error.text_direction = Control.TEXT_DIRECTION_RTL
+	name_error.add_theme_font_size_override("font_size", 16)
+	name_error.add_theme_color_override("font_color", Color("ffbf9d"))
+	content.add_child(name_error)
+	var confirm := Button.new()
+	confirm.text = "شروع ماجرا"
+	confirm.custom_minimum_size = Vector2(210, 46)
+	confirm.add_theme_font_size_override("font_size", 18)
+	confirm.pressed.connect(save_player_name.bind(""))
+	content.add_child(confirm)
+	name_prompt.hide()
+
+func save_player_name(submitted_name: String = "") -> void:
+	var chosen_name := submitted_name.strip_edges()
+	if chosen_name.is_empty():
+		chosen_name = name_input.text.strip_edges()
+	if chosen_name.is_empty():
+		name_error.text = "لطفاً یک نام کوتاه بنویس."
+		return
+	player_name = chosen_name.left(50)
+	save_player_progress()
+	update_main_menu_stats()
+	name_prompt.hide()
+
+func load_player_progress() -> void:
+	if not FileAccess.file_exists(SAVE_PATH):
+		return
+	var file := FileAccess.open(SAVE_PATH, FileAccess.READ)
+	if file == null:
+		return
+	var json := JSON.new()
+	if json.parse(file.get_as_text()) != OK:
+		return
+	var data = json.data
+	if not data is Dictionary:
+		return
+	player_name = str(data.get("player_name", "")).strip_edges().left(50)
+	completed_cases = clampi(int(data.get("completed_cases", 0)), 0, 5)
+	earned_stars = maxi(0, int(data.get("earned_stars", 0)))
+	earned_coins = maxi(0, int(data.get("earned_coins", 0)))
+
+func save_player_progress() -> void:
+	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	if file == null:
+		return
+	var data := {
+		"version": 1,
+		"player_name": player_name,
+		"completed_cases": completed_cases,
+		"earned_stars": earned_stars,
+		"earned_coins": earned_coins
+	}
+	file.store_string(JSON.stringify(data))
 
 func show_main_menu() -> void:
 	scene_background.texture = MAINPAGE_BACKGROUND
@@ -176,10 +309,21 @@ func show_main_menu() -> void:
 	modal.hide()
 	for hotspot in hotspot_buttons:
 		hotspot.hide()
+	update_main_menu_stats()
 	main_menu.show()
 	main_menu.move_to_front()
+	if player_name.is_empty():
+		name_prompt.show()
+		name_prompt.move_to_front()
+		name_input.grab_focus()
+	else:
+		name_prompt.hide()
 
 func begin_bazaar_case() -> void:
+	if player_name.is_empty():
+		name_prompt.show()
+		name_prompt.move_to_front()
+		return
 	score = 50
 	reset_investigation()
 	main_menu.hide()
@@ -1134,6 +1278,10 @@ func choose_case_answer(answer_index: int) -> void:
 
 func show_case_ending() -> void:
 	case_completed = true
+	completed_cases = 1
+	earned_stars = 1
+	earned_coins = score
+	save_player_progress()
 	for choice in case_choices.get_children():
 		choice.queue_free()
 	case_title.text = "پرونده حل شد!"

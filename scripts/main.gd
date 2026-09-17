@@ -3,7 +3,10 @@ extends Control
 const BACKGROUND := preload("res://sources/pics/s1.png")
 const CORRIDOR_BACKGROUND := preload("res://sources/pics/s2.png")
 const ASSISTANT_DIALOGUE_BACKGROUND := preload("res://sources/pics/s3.png")
+const MASTER_DIALOGUE_BACKGROUND := preload("res://sources/pics/oldman.png")
 const WAREHOUSE_BACKGROUND := preload("res://sources/pics/s4.png")
+const NOTEBOOK_BACKGROUND := preload("res://sources/pics/note.png")
+const WRAPPED_PACKAGE := preload("res://sources/pics/clue_wrapped_package.png")
 const CLUES := [
 	{"id": "receipt", "title": "رسید کاغذی", "description": "یه رسید تازه کنار پیشخوان افتاده! شاید بگوید چه کسی و چه وقتی خرید کرده.", "position": Vector2(0.36, 0.36), "size": Vector2(0.075, 0.10)},
 	{"id": "thread", "title": "نخ قرمز", "description": "اِ... یه نخ قرمز به پیشخوان گیر کرده. شاید از لباس یا بستهٔ کسی جا مانده باشد.", "position": Vector2(0.45, 0.40), "size": Vector2(0.045, 0.14)},
@@ -16,12 +19,18 @@ var found_clues: Dictionary = {}
 var hotspot_buttons: Array[Button] = []
 var clue_count_label: Label
 var prompt_label: Label
+var game_footer: PanelContainer
+var scene_shade: ColorRect
+var scene_header: PanelContainer
 var modal: PanelContainer
 var modal_title: Label
 var modal_description: Label
 var modal_close_button: Button
-var notebook: PanelContainer
+var notebook: Control
 var notebook_button: Button
+var notebook_talk_button: Button
+var notebook_return_texture: Texture2D
+var lock_was_visible := false
 var dialogue: PanelContainer
 var dialogue_name: Label
 var dialogue_text: Label
@@ -42,6 +51,11 @@ var lock_panel: PanelContainer
 var lock_status: Label
 var lock_sequence_label: Label
 var cabinet_unlocked := false
+var packaging_panel: PanelContainer
+var packaging_status: Label
+var packaging_choices: VBoxContainer
+var packaging_solved := false
+var packaging_was_visible := false
 var selected_symbols: Array[int] = []
 var lock_code: Array[int] = []
 var previous_lock_code: Array[int] = []
@@ -73,25 +87,25 @@ func build_scene() -> void:
 	scene_background.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(scene_background)
 
-	var shade := ColorRect.new()
-	shade.color = Color(0.05, 0.025, 0.012, 0.18)
-	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(shade)
+	scene_shade = ColorRect.new()
+	scene_shade.color = Color(0.05, 0.025, 0.012, 0.18)
+	scene_shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	scene_shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(scene_shade)
 	build_header()
 	build_hotspots()
 	build_footer()
 	build_clue_panel()
 
 func build_header() -> void:
-	var header := PanelContainer.new()
-	header.position = Vector2(28, 22)
-	header.size = Vector2(430, 92)
-	header.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.90), Color(0.88, 0.64, 0.25, 0.85), 16, 2))
-	add_child(header)
+	scene_header = PanelContainer.new()
+	scene_header.position = Vector2(28, 22)
+	scene_header.size = Vector2(430, 92)
+	scene_header.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.90), Color(0.88, 0.64, 0.25, 0.85), 16, 2))
+	add_child(scene_header)
 	var content := VBoxContainer.new()
 	content.add_theme_constant_override("separation", 2)
-	header.add_child(content)
+	scene_header.add_child(content)
 	var title := Label.new()
 	title.text = "راز بازار بزرگ"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
@@ -125,21 +139,21 @@ func build_hotspots() -> void:
 		hotspot_buttons.append(button)
 
 func build_footer() -> void:
-	var footer := PanelContainer.new()
-	footer.anchor_left = 0.5
-	footer.anchor_top = 1.0
-	footer.anchor_right = 0.5
-	footer.anchor_bottom = 1.0
-	footer.offset_left = -390
-	footer.offset_top = -94
-	footer.offset_right = 390
-	footer.offset_bottom = -24
-	footer.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.88), Color(0.88, 0.64, 0.25, 0.75), 14, 2))
-	add_child(footer)
+	game_footer = PanelContainer.new()
+	game_footer.anchor_left = 0.5
+	game_footer.anchor_top = 1.0
+	game_footer.anchor_right = 0.5
+	game_footer.anchor_bottom = 1.0
+	game_footer.offset_left = -390
+	game_footer.offset_top = -94
+	game_footer.offset_right = 390
+	game_footer.offset_bottom = -24
+	game_footer.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.88), Color(0.88, 0.64, 0.25, 0.75), 14, 2))
+	add_child(game_footer)
 	var row := HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.add_theme_constant_override("separation", 18)
-	footer.add_child(row)
+	game_footer.add_child(row)
 	prompt_label = Label.new()
 	prompt_label.text = "دنبال نقطه‌های طلایی بگرد و روشون بزن!"
 	prompt_label.text_direction = Control.TEXT_DIRECTION_RTL
@@ -173,7 +187,7 @@ func build_clue_panel() -> void:
 	modal.offset_right = 270
 	modal.offset_bottom = 155
 	modal.visible = false
-	modal.add_theme_stylebox_override("panel", panel_style(Color(0.12, 0.067, 0.032, 0.97), Color(0.96, 0.74, 0.31, 1), 18, 3))
+	modal.add_theme_stylebox_override("panel", panel_style(Color(0.12, 0.067, 0.032, 0.82), Color(0.96, 0.74, 0.31, 1), 18, 3))
 	add_child(modal)
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 14)
@@ -229,11 +243,15 @@ func reset_investigation() -> void:
 	found_clues.clear()
 	time_puzzle_solved = false
 	cabinet_unlocked = false
+	packaging_solved = false
 	selected_symbols.clear()
 	generate_lock_code()
 	update_notebook_code_text()
 	modal.hide()
 	notebook.hide()
+	game_footer.show()
+	scene_shade.show()
+	scene_header.show()
 	dialogue.hide()
 	if route_panel:
 		route_panel.hide()
@@ -241,6 +259,8 @@ func reset_investigation() -> void:
 		assistant_panel.hide()
 	if lock_panel:
 		lock_panel.hide()
+	if packaging_panel:
+		packaging_panel.hide()
 	scene_background.texture = BACKGROUND
 	notebook_button.disabled = true
 	modal_close_button.text = "ادامهٔ جست‌وجو"
@@ -261,64 +281,97 @@ func _process(delta: float) -> void:
 			button.modulate = Color(1.0, 0.96, 0.24, 0.62 + (sin(pulse_time * 2.4) + 1.0) * 0.16)
 
 func build_notebook() -> void:
-	notebook = PanelContainer.new()
+	notebook = Control.new()
 	notebook.anchor_left = 0.5
 	notebook.anchor_top = 0.5
 	notebook.anchor_right = 0.5
 	notebook.anchor_bottom = 0.5
-	notebook.offset_left = -430
-	notebook.offset_top = -280
-	notebook.offset_right = 430
-	notebook.offset_bottom = 280
+	notebook.offset_left = -500
+	notebook.offset_top = -300
+	notebook.offset_right = 500
+	notebook.offset_bottom = 300
 	notebook.visible = false
-	notebook.add_theme_stylebox_override("panel", panel_style(Color(0.16, 0.10, 0.052, 0.98), Color(0.96, 0.74, 0.31, 1), 18, 3))
 	add_child(notebook)
-	var content := VBoxContainer.new()
-	content.add_theme_constant_override("separation", 10)
-	notebook.add_child(content)
 	var title := Label.new()
 	title.text = "دفتر کارآگاه"
+	title.position = Vector2(350, 82)
+	title.size = Vector2(360, 42)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	title.text_direction = Control.TEXT_DIRECTION_RTL
-	title.add_theme_font_size_override("font_size", 32)
-	title.add_theme_color_override("font_color", Color("ffe09a"))
-	content.add_child(title)
+	title.add_theme_font_size_override("font_size", 26)
+	title.add_theme_color_override("font_color", Color("57351e"))
+	notebook.add_child(title)
 	var intro := Label.new()
-	intro.text = "چه خوب! این‌ها چیزهایی‌اند که توی حجره پیدا کردی. حالا باید ببینیم کدامشان به هم ربط دارند."
+	intro.text = "سرنخ‌های پرونده"
+	intro.position = Vector2(350, 128)
+	intro.size = Vector2(360, 30)
 	intro.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	intro.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	intro.text_direction = Control.TEXT_DIRECTION_RTL
-	intro.add_theme_font_size_override("font_size", 19)
-	intro.add_theme_color_override("font_color", Color("fff6e6"))
-	content.add_child(intro)
+	intro.add_theme_font_size_override("font_size", 18)
+	intro.add_theme_color_override("font_color", Color("57351e"))
+	notebook.add_child(intro)
 	notebook_clues_text = Label.new()
+	notebook_clues_text.position = Vector2(330, 165)
+	notebook_clues_text.size = Vector2(400, 235)
 	notebook_clues_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	notebook_clues_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	notebook_clues_text.text_direction = Control.TEXT_DIRECTION_RTL
-	notebook_clues_text.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	notebook_clues_text.add_theme_font_size_override("font_size", 20)
-	notebook_clues_text.add_theme_color_override("font_color", Color("f4e2c0"))
-	content.add_child(notebook_clues_text)
+	notebook_clues_text.add_theme_font_size_override("font_size", 17)
+	notebook_clues_text.add_theme_color_override("font_color", Color("57351e"))
+	notebook.add_child(notebook_clues_text)
 	update_notebook_code_text()
-	var talk := Button.new()
-	talk.text = "با استاد حرف بزنیم"
-	talk.custom_minimum_size = Vector2(210, 46)
-	talk.add_theme_font_size_override("font_size", 18)
-	talk.pressed.connect(open_dialogue)
-	content.add_child(talk)
+	notebook_talk_button = Button.new()
+	notebook_talk_button.text = "با استاد حرف بزنیم"
+	notebook_talk_button.position = Vector2(165, 430)
+	notebook_talk_button.size = Vector2(220, 42)
+	notebook_talk_button.custom_minimum_size = Vector2(210, 46)
+	notebook_talk_button.add_theme_font_size_override("font_size", 18)
+	notebook_talk_button.pressed.connect(open_dialogue)
+	notebook.add_child(notebook_talk_button)
 	var close := Button.new()
-	close.text = "برگردیم به حجره"
+	close.text = "بستن دفتر"
+	close.position = Vector2(165, 485)
+	close.size = Vector2(220, 42)
 	close.custom_minimum_size = Vector2(195, 46)
 	close.add_theme_font_size_override("font_size", 18)
-	close.pressed.connect(func() -> void: notebook.hide())
-	content.add_child(close)
+	close.pressed.connect(close_notebook)
+	notebook.add_child(close)
 	build_dialogue()
 
 func open_notebook() -> void:
 	if found_clues.size() == CLUES.size():
 		modal.hide()
+		notebook_return_texture = scene_background.texture
+		scene_background.texture = NOTEBOOK_BACKGROUND
+		scene_shade.hide()
+		scene_header.hide()
+		game_footer.hide()
+		for hotspot in hotspot_buttons:
+			hotspot.hide()
+		lock_was_visible = lock_panel != null and lock_panel.visible
+		if lock_was_visible:
+			lock_panel.hide()
+		packaging_was_visible = packaging_panel != null and packaging_panel.visible
+		if packaging_was_visible:
+			packaging_panel.hide()
+		notebook_talk_button.visible = not time_puzzle_solved
 		notebook.move_to_front()
 		notebook.show()
+
+func close_notebook() -> void:
+	if notebook_return_texture:
+		scene_background.texture = notebook_return_texture
+	scene_shade.show()
+	scene_header.show()
+	game_footer.show()
+	if lock_was_visible and lock_panel:
+		lock_panel.show()
+	lock_was_visible = false
+	if packaging_was_visible and packaging_panel:
+		packaging_panel.show()
+	packaging_was_visible = false
+	notebook.hide()
 
 func build_dialogue() -> void:
 	dialogue = PanelContainer.new()
@@ -331,7 +384,7 @@ func build_dialogue() -> void:
 	dialogue.offset_right = 430
 	dialogue.offset_bottom = 230
 	dialogue.visible = false
-	dialogue.add_theme_stylebox_override("panel", panel_style(Color(0.11, 0.06, 0.03, 0.98), Color(0.72, 0.82, 0.68, 1), 18, 3))
+	dialogue.add_theme_stylebox_override("panel", panel_style(Color(0.11, 0.06, 0.03, 0.83), Color(0.72, 0.82, 0.68, 1), 18, 3))
 	add_child(dialogue)
 	var content := VBoxContainer.new()
 	content.add_theme_constant_override("separation", 16)
@@ -357,7 +410,8 @@ func build_dialogue() -> void:
 	content.add_child(dialogue_next_button)
 
 func open_dialogue() -> void:
-	notebook.hide()
+	close_notebook()
+	scene_background.texture = MASTER_DIALOGUE_BACKGROUND
 	reset_dialogue_next_action()
 	dialogue_step = 0
 	dialogue.show()
@@ -472,7 +526,7 @@ func build_route_panel() -> void:
 	route_panel.offset_top = -245
 	route_panel.offset_right = 375
 	route_panel.offset_bottom = 245
-	route_panel.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.96), Color(0.88, 0.64, 0.25, 1), 18, 3))
+	route_panel.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.82), Color(0.88, 0.64, 0.25, 1), 18, 3))
 	add_child(route_panel)
 	var content := VBoxContainer.new()
 	content.add_theme_constant_override("separation", 14)
@@ -543,7 +597,7 @@ func build_assistant_dialogue() -> void:
 	assistant_panel.offset_top = -290
 	assistant_panel.offset_right = 480
 	assistant_panel.offset_bottom = -22
-	assistant_panel.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.95), Color(0.72, 0.82, 0.68, 1), 18, 3))
+	assistant_panel.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.81), Color(0.72, 0.82, 0.68, 1), 18, 3))
 	add_child(assistant_panel)
 	var content := VBoxContainer.new()
 	content.add_theme_constant_override("separation", 12)
@@ -604,7 +658,7 @@ func build_lock_panel() -> void:
 	lock_panel.offset_top = -220
 	lock_panel.offset_right = 380
 	lock_panel.offset_bottom = 220
-	lock_panel.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.96), Color(0.96, 0.74, 0.31, 1), 18, 3))
+	lock_panel.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.82), Color(0.96, 0.74, 0.31, 1), 18, 3))
 	add_child(lock_panel)
 	var content := VBoxContainer.new()
 	content.add_theme_constant_override("separation", 13)
@@ -658,7 +712,8 @@ func choose_symbol(symbol: int) -> void:
 		if selected_symbols == lock_code:
 			cabinet_unlocked = true
 			lock_status.text = "آفرین! صدای باز شدن قفل آمد. داخل کمد یک بسته با کاغذ تازه پیدا کردی."
-			prompt_label.text = "کمد باز شد! قدم بعدی: بررسی بسته‌بندی و پیدا کردن قطعهٔ گمشده."
+			prompt_label.text = "کمد باز شد! حالا بسته‌بندی را با نمونه‌ها مقایسه کن."
+			start_packaging_stage()
 		else:
 			lock_status.text = "این ترتیب قفل را باز نکرد. اشکالی ندارد؛ دفتر کارآگاه پایین صفحه را باز کن و کاغذ اعداد را دوباره ببین."
 			selected_symbols.clear()
@@ -670,6 +725,90 @@ func clear_lock_sequence() -> void:
 	selected_symbols.clear()
 	lock_status.text = "ترتیب پاک شد. اگر لازم داری، دفتر کارآگاه پایین صفحه را باز کن و کاغذ اعداد را ببین."
 	update_lock_sequence()
+
+func start_packaging_stage() -> void:
+	lock_panel.hide()
+	build_packaging_panel()
+	packaging_panel.show()
+
+func build_packaging_panel() -> void:
+	if packaging_panel:
+		return
+	packaging_panel = PanelContainer.new()
+	packaging_panel.anchor_left = 0.5
+	packaging_panel.anchor_top = 0.5
+	packaging_panel.anchor_right = 0.5
+	packaging_panel.anchor_bottom = 0.5
+	packaging_panel.offset_left = -390
+	packaging_panel.offset_top = -220
+	packaging_panel.offset_right = 390
+	packaging_panel.offset_bottom = 220
+	packaging_panel.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.82), Color(0.72, 0.82, 0.68, 1), 18, 3))
+	add_child(packaging_panel)
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 13)
+	packaging_panel.add_child(content)
+	var title := Label.new()
+	title.text = "بررسی بسته‌بندی"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	title.text_direction = Control.TEXT_DIRECTION_RTL
+	title.add_theme_font_size_override("font_size", 30)
+	title.add_theme_color_override("font_color", Color("d9efbd"))
+	content.add_child(title)
+	packaging_status = Label.new()
+	packaging_status.text = "این بسته را داخل کمد پیدا کردی. خوب به شکل کاغذ، طرح و لبه‌هایش نگاه کن."
+	packaging_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	packaging_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	packaging_status.text_direction = Control.TEXT_DIRECTION_RTL
+	packaging_status.add_theme_font_size_override("font_size", 20)
+	packaging_status.add_theme_color_override("font_color", Color("fff6e6"))
+	content.add_child(packaging_status)
+	var package_preview := TextureRect.new()
+	package_preview.texture = WRAPPED_PACKAGE
+	package_preview.custom_minimum_size = Vector2(240, 135)
+	package_preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	package_preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	package_preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	content.add_child(package_preview)
+	var question := Label.new()
+	question.text = "حالا کدام نمونه با این بسته جور درمی‌آید؟"
+	question.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	question.text_direction = Control.TEXT_DIRECTION_RTL
+	question.add_theme_font_size_override("font_size", 19)
+	question.add_theme_color_override("font_color", Color("fff6e6"))
+	content.add_child(question)
+	packaging_choices = VBoxContainer.new()
+	packaging_choices.add_theme_constant_override("separation", 9)
+	content.add_child(packaging_choices)
+	add_packaging_choice("کاغذ سادهٔ کرم", false)
+	add_packaging_choice("کاغذ گل‌دار با لبهٔ پاره", true)
+	add_packaging_choice("کاغذ راه‌راه آبی", false)
+
+func add_packaging_choice(text: String, is_correct: bool) -> void:
+	var button := Button.new()
+	button.text = text
+	button.custom_minimum_size = Vector2(350, 43)
+	button.add_theme_font_size_override("font_size", 18)
+	button.pressed.connect(choose_packaging.bind(is_correct))
+	packaging_choices.add_child(button)
+
+func choose_packaging(is_correct: bool) -> void:
+	if packaging_solved:
+		return
+	if not is_correct:
+		packaging_status.text = "این نمونه جور نیست. به نقش کاغذ و لبهٔ پارهٔ آن دقت کن."
+		return
+	packaging_solved = true
+	for choice in packaging_choices.get_children():
+		choice.queue_free()
+	packaging_status.text = "آفرین! نقش کاغذ و لبهٔ پاره دقیقاً با بستهٔ کمد جور شد. این بسته یک مدرک مهم برای مرور پرونده است."
+	var next := Button.new()
+	next.text = "مرحلهٔ بعد: مرور پرونده"
+	next.custom_minimum_size = Vector2(270, 46)
+	next.add_theme_font_size_override("font_size", 18)
+	next.pressed.connect(func() -> void: packaging_panel.hide())
+	packaging_choices.add_child(next)
+	prompt_label.text = "بسته‌بندی هم بررسی شد. قدم بعدی: مرور همهٔ مدرک‌ها و نتیجه‌گیری."
 
 func update_lock_sequence() -> void:
 	if selected_symbols.is_empty():
@@ -705,7 +844,7 @@ func format_code(code: Array[int]) -> String:
 
 func update_notebook_code_text() -> void:
 	if notebook_clues_text:
-		notebook_clues_text.text = "• ساعت روی ۴:۲۰ مانده، اما خراب است\n• رسید کاغذی، نخ قرمز، رد کفش و کاغذ اعداد\n• ترتیب روی کاغذ: %s\n\nقدم بعدی: با صاحب حجره حرف بزنیم و ماجرای ساعت ۴:۲۰ را بپرسیم." % format_code(lock_code)
+		notebook_clues_text.text = "• ساعت روی ۴:۲۰ مانده، اما خراب است\n• رسید کاغذی، نخ قرمز، رد کفش و کاغذ اعداد\n• ترتیب روی کاغذ: %s\n\nاین دفتر همیشه برای مرور سرنخ‌ها در دسترس است." % format_code(lock_code)
 
 func panel_style(background: Color, border: Color, radius: float, width: float) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()

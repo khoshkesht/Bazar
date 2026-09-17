@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="sourcepics">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/sourcepics/black-stripes-pattern-background.zip!/" />
+      <root url="jar://$PROJECT_DIR$/sourcepics/Godot_v4.7.2-stable_win64.exe.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

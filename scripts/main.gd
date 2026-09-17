@@ -109,6 +109,7 @@ var click_player: AudioStreamPlayer
 var music_player: AudioStreamPlayer
 var music_toggle_button: Button
 var music_enabled := true
+var exit_button: Button
 
 const DIALOGUE_LINES := [
 	{"speaker": "استاد قلم‌زن", "text": "آفرین، کارآگاه! حسابی گشتی. من ساعت ۴:۴۵، درست قبل از بیرون رفتنم، پلاک را توی جعبه دیدم."},
@@ -144,6 +145,7 @@ const CASE_QUESTIONS := [
 ]
 
 func _ready() -> void:
+	DisplayServer.screen_set_orientation(DisplayServer.SCREEN_LANDSCAPE)
 	setup_audio()
 	load_player_progress()
 	generate_lock_code()
@@ -262,12 +264,20 @@ func build_main_menu() -> void:
 	main_avatar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	main_menu.add_child(main_avatar)
 	music_toggle_button = Button.new()
-	music_toggle_button.position = Vector2(1210, 664)
+	music_toggle_button.position = Vector2(1158, 664)
 	music_toggle_button.size = Vector2(44, 40)
 	music_toggle_button.add_theme_font_size_override("font_size", 25)
 	music_toggle_button.pressed.connect(toggle_music)
 	main_menu.add_child(music_toggle_button)
 	update_music_toggle_button()
+	exit_button = Button.new()
+	exit_button.text = "×"
+	exit_button.tooltip_text = "خروج از بازی"
+	exit_button.position = Vector2(1210, 664)
+	exit_button.size = Vector2(44, 40)
+	exit_button.add_theme_font_size_override("font_size", 28)
+	exit_button.pressed.connect(exit_game)
+	main_menu.add_child(exit_button)
 	var credit_link := LinkButton.new()
 	credit_link.text = "by: m.khoshkesht"
 	credit_link.uri = "mailto:mo.khoshkesht@gmail.com"
@@ -293,6 +303,9 @@ func update_music_toggle_button() -> void:
 		return
 	music_toggle_button.text = "♫" if music_enabled else "♪×"
 	music_toggle_button.tooltip_text = "قطع موسیقی" if music_enabled else "پخش موسیقی"
+
+func exit_game() -> void:
+	get_tree().quit()
 
 func build_main_stat_label(position_value: Vector2, size_value: Vector2) -> Label:
 	var label := Label.new()

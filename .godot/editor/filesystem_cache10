@@ -1,7 +1,7 @@
 9cad1ddce9e5a63143ba340c9520626b
-::res://::1789659067
+::res://::1789662702
 AGENTS.md::TextFile::-1::1789644865::0::1::::<><><>0<>0<><>::
-export_presets.cfg::TextFile::-1::1789659067::0::1::::<><><>0<>0<><>::
+export_presets.cfg::TextFile::-1::1789662644::0::1::::<><><>0<>0<><>::
 ::res://data/::1789644203
 ::res://data/cases/::1789645111
 bazaar_001.json::JSON::-1::1789645111::0::1::::<><><>0<>0<><>::
@@ -24,7 +24,27 @@ source-proposal.md::TextFile::-1::1789655914::0::1::::<><><>0<>0<><>::
 ::res://scenes/::1789644413
 main.tscn::PackedScene::-1::1789644413::0::1::::<><><>0<>0<><>::res://scripts/main.gd
 ::res://scripts/::1789644470
-main.gd::GDScript::9039789884927234848::1789658487::0::1::::<>Control<><>0<>0<><>::
+main.gd::GDScript::9039789884927234848::1789660423::0::1::::<>Control<><>0<>0<><>::
+::res://sourcepics/::1789660663
+ChatGPT Image Sep 17, 2026, 01_37_01 PM (1).png::CompressedTexture2D::3117114925346780687::1789639622::1789660663::1::::<><><>0<>0<>678496686e6a0512a21ce77224dae79a<>res://.godot/imported/ChatGPT Image Sep 17, 2026, 01_37_01 PM (1).png-ba1829e30fd8797a0b64bbc08f63cbd4.ctex::
+ChatGPT Image Sep 17, 2026, 03_32_01 PM.png::CompressedTexture2D::6397429958930376289::1789646522::1789660663::1::::<><><>0<>0<>d0f78bc92d53bad36e4eb7ba9d4a9eb3<>res://.godot/imported/ChatGPT Image Sep 17, 2026, 03_32_01 PM.png-1d950c65e51472e95cad40d7249a0a53.ctex::
+ChatGPT Image Sep 17, 2026, 03_46_52 PM (1).png::CompressedTexture2D::3187352045698668928::1789659406::1789660662::1::::<><><>0<>0<>382807f8fc2d9b8ac2c500b088c64971<>res://.godot/imported/ChatGPT Image Sep 17, 2026, 03_46_52 PM (1).png-a371dfe5fcd49f96b6115734fae3941a.ctex::
+ChatGPT Image Sep 17, 2026, 03_46_52 PM.png::CompressedTexture2D::5384530146816377655::1789647412::1789660663::1::::<><><>0<>0<>ef9edde32b401beb2e8342044afe0c4c<>res://.godot/imported/ChatGPT Image Sep 17, 2026, 03_46_52 PM.png-e6aace4b8359968812a337b6dfa38cb8.ctex::
+ChatGPT Image Sep 17, 2026, 04_40_51 PM.png::CompressedTexture2D::6426386123001499134::1789650652::1789660663::1::::<><><>0<>0<>4c297b9dc2fde7e4dfcc9354cd9e7d21<>res://.godot/imported/ChatGPT Image Sep 17, 2026, 04_40_51 PM.png-a0ba1b67b9461a57b8de50b11882afac.ctex::
+ChatGPT Image Sep 17, 2026, 04_46_49 PM.png::CompressedTexture2D::2248514680241684495::1789651010::1789660662::1::::<><><>0<>0<>5a4828f645ca3b095c725d880233573f<>res://.godot/imported/ChatGPT Image Sep 17, 2026, 04_46_49 PM.png-614aeb6fe2c56e95d76c208e244e7464.ctex::
+ChatGPT Image Sep 17, 2026, 05_07_37 PM (1).png::CompressedTexture2D::6262649059203059985::1789652258::1789660662::1::::<><><>0<>0<>a202e226dd9db56963dc35298e3696ee<>res://.godot/imported/ChatGPT Image Sep 17, 2026, 05_07_37 PM (1).png-327646170c78bf3efb7a0ecf8e88e766.ctex::
+ChatGPT Image Sep 17, 2026, 05_07_38 PM (2).png::CompressedTexture2D::3105657638096438847::1789652259::1789660662::1::::<><><>0<>0<>56efdb7b3860a5d5edf53b04703374f2<>res://.godot/imported/ChatGPT Image Sep 17, 2026, 05_07_38 PM (2).png-8badc21b4c2958ff22440edb55dd72ae.ctex::
+ChatGPT Image Sep 17, 2026, 05_57_33 PM.png::CompressedTexture2D::1416941364593752060::1789655255::1789660662::1::::<><><>0<>0<>c7d1a38490e61176f5e52e08a5b9f629<>res://.godot/imported/ChatGPT Image Sep 17, 2026, 05_57_33 PM.png-06b80cb5b74ce995301fb566084e82fe.ctex::
+ChatGPT Image Sep 17, 2026, 05_59_01 PM (1).png::CompressedTexture2D::3888341534837726798::1789655342::1789660662::1::::<><><>0<>0<>c0d1ce517a641bd0b8dd052cf41312ce<>res://.godot/imported/ChatGPT Image Sep 17, 2026, 05_59_01 PM (1).png-c8949fa5658bae33cb53501e69e7a41f.ctex::
+ChatGPT Image Sep 17, 2026, 05_59_02 PM (2).png::CompressedTexture2D::8842675999185204593::1789655343::1789660662::1::::<><><>0<>0<>ce5b883127246bcdf1bb79f672694b07<>res://.godot/imported/ChatGPT Image Sep 17, 2026, 05_59_02 PM (2).png-e2b0bf48102253593e76cda429dd2306.ctex::
+ChatGPT Image ۲۶ شهریور ۱۴۰۵، ۱۲_۲۴_۰۳.png::CompressedTexture2D::2274829701729084347::1789635244::1789660662::1::::<><><>0<>0<>6c4752135917f34c3d16b7df3b9063ef<>res://.godot/imported/ChatGPT Image ۲۶ شهریور ۱۴۰۵، ۱۲_۲۴_۰۳.png-7089d3d6683a446dc2f0db7a323996b9.ctex::
+raz_bazar_detective_loop_30s.mp3::AudioStreamMP3::3316846934673806351::1789656429::1789660661::1::::<><><>0<>0<>b9acd9e61112f77498493b38e61124a5<>res://.godot/imported/raz_bazar_detective_loop_30s.mp3-74d59fc3b4030013bfe2f21128445c1a.mp3str::
+raz_bazar_detective_loop_30s.wav::AudioStreamWAV::3331619286514390372::1789656311::1789660663::1::::<><><>0<>0<>d73e8e76a5bf8340e59c86bd8ee40a4b<>res://.godot/imported/raz_bazar_detective_loop_30s.wav-a6c99e2ba564c7b914a6f4ff2cc585ae.sample::
+s1.png::CompressedTexture2D::4606950008722689562::1789639202::1789660661::1::::<><><>0<>0<>6a679392ee38ca12ef30672ad23b534d<>res://.godot/imported/s1.png-8feafc23667bb770ba20f5a114986faf.ctex::
+s2.png::CompressedTexture2D::5205392960193165258::1789639307::1789660661::1::::<><><>0<>0<>6d80eebae826bf0c6834ba824b968e72<>res://.godot/imported/s2.png-e582c60ed108caeea781935fa1a41371.ctex::
+s3.png::CompressedTexture2D::5405730274580077141::1789639457::1789660661::1::::<><><>0<>0<>28a1e0825b5a23610bd94db322dd5681<>res://.godot/imported/s3.png-0cd34cfe9d55aae08979504e08d46d57.ctex::
+s4.png::CompressedTexture2D::8130310271159063155::1789639530::1789660661::1::::<><><>0<>0<>e80381f49b0890227d37485f32d5e549<>res://.godot/imported/s4.png-b124890851b5c03a295d85fa46be976d.ctex::
+s5.png::CompressedTexture2D::6778377013774137598::1789639625::1789660661::1::::<><><>0<>0<>beb3a741699bc1c932ff2ff354bd223f<>res://.godot/imported/s5.png-e925aae2d73ffc31630b37564d8a7398.ctex::
 ::res://sources/::1789656605
 bgmusic.mp3::AudioStreamMP3::6217672721967291710::1789656429::1789656605::1::::<><><>0<>0<>8addaf2c9db266e8c6ad3303df8b6796<>res://.godot/imported/bgmusic.mp3-9b1f0d84a4956bc08b3408df38ef19aa.mp3str::
 ::res://sources/docs/::1789644203
@@ -36,12 +56,13 @@ Scene 04-v2.txt::TextFile::-1::1789641689::0::1::::<><><>0<>0<><>::
 Scene 04.txt::TextFile::-1::1789639045::0::1::::<><><>0<>0<><>::
 Scene 05.txt::TextFile::-1::1789639056::0::1::::<><><>0<>0<><>::
 Style Bible.txt::TextFile::-1::1789638973::0::1::::<><><>0<>0<><>::
-::res://sources/pics/::1789659453
+::res://sources/pics/::1789660720
 boy.png::CompressedTexture2D::1633490496878964912::1789659557::1789659699::1::::<><><>0<>0<>2fe038597a0df580f3e60bced399dd3f<>res://.godot/imported/boy.png-5738e870a1aa5de0a19493b7e9e35ec6.ctex::
 bt-disable.png::CompressedTexture2D::6592982914711553452::1789659585::1789659699::1::::<><><>0<>0<>0cc9754ed96f93f249d97639c4dbb10e<>res://.godot/imported/bt-disable.png-d0ae6b2e9b0ef5155d1141a3a9d37e4c.ctex::
 bt-hover.png::CompressedTexture2D::1866472213602712775::1789659585::1789659699::1::::<><><>0<>0<>93fc27592c916f31af5711b2f5ed87bf<>res://.godot/imported/bt-hover.png-149188724601ad5a678073cc50a6a395.ctex::
 clue_wrapped_package.png::CompressedTexture2D::3435894629865975859::1789659585::1789659699::1::::<><><>0<>0<>788ba5eb477d08f27bb36151ecd44dc5<>res://.godot/imported/clue_wrapped_package.png-c0fe0b2824623905d5371c1e7a974c07.ctex::
 girl.png::CompressedTexture2D::1127598867023374880::1789659585::1789659699::1::::<><><>0<>0<>93daa70145aab0d5e27b23a573121375<>res://.godot/imported/girl.png-0799f1a4ce52ca1dc197f2b010062d22.ctex::
+icon.png::CompressedTexture2D::1874220194969556228::1789660478::1789660720::1::::<><><>0<>0<>c20b7fa9f94b7a36fd22e759068d7a00<>res://.godot/imported/icon.png-9961afec2e3dd43519fbb1948f1463e1.ctex::
 locked-case-lines.png::CompressedTexture2D::6180345986851461019::1789659585::1789659699::1::::<><><>0<>0<>19c3352921728261d85a0aa03455763c<>res://.godot/imported/locked-case-lines.png-4f6954fa5c191e047e146f06638451cd.ctex::
 mainpage.png::CompressedTexture2D::9139651680898612030::1789659585::1789659699::1::::<><><>0<>0<>0252d5364a72e17a066d8e2da68e82c3<>res://.godot/imported/mainpage.png-4b53080df22dd5c302cbd46437d20c3f.ctex::
 note.png::CompressedTexture2D::3374306526296101377::1789659585::1789659700::1::::<><><>0<>0<>4f7fa88c0f912acf0192c6e6afae64d0<>res://.godot/imported/note.png-d846fcd0dd5ea44a1e835b648ef72617.ctex::

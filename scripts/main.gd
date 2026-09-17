@@ -259,6 +259,17 @@ func build_main_menu() -> void:
 	main_avatar.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	main_avatar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	main_menu.add_child(main_avatar)
+	var credit_link := LinkButton.new()
+	credit_link.text = "by: m.khoshkesht"
+	credit_link.uri = "mailto:mo.khoshkesht@gmail.com"
+	credit_link.tooltip_text = "ارسال ایمیل به mo.khoshkesht@gmail.com"
+	credit_link.position = Vector2(26, 676)
+	credit_link.size = Vector2(240, 28)
+	credit_link.text_direction = Control.TEXT_DIRECTION_LTR
+	credit_link.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	credit_link.add_theme_font_size_override("font_size", 16)
+	credit_link.add_theme_color_override("font_color", Color("ffe09a"))
+	main_menu.add_child(credit_link)
 	update_main_menu_stats()
 	build_name_prompt()
 

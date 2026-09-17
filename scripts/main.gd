@@ -6,6 +6,7 @@ const ASSISTANT_DIALOGUE_BACKGROUND := preload("res://sources/pics/s3.png")
 const MASTER_DIALOGUE_BACKGROUND := preload("res://sources/pics/oldman.png")
 const WAREHOUSE_BACKGROUND := preload("res://sources/pics/s4.png")
 const NOTEBOOK_BACKGROUND := preload("res://sources/pics/note.png")
+const CASE_REVIEW_BACKGROUND := preload("res://sources/pics/s5.png")
 const WRAPPED_PACKAGE := preload("res://sources/pics/clue_wrapped_package.png")
 const CLUES := [
 	{"id": "receipt", "title": "رسید کاغذی", "description": "یه رسید تازه کنار پیشخوان افتاده! شاید بگوید چه کسی و چه وقتی خرید کرده.", "position": Vector2(0.36, 0.36), "size": Vector2(0.075, 0.10)},
@@ -30,6 +31,7 @@ var notebook: Control
 var notebook_button: Button
 var notebook_talk_button: Button
 var notebook_return_texture: Texture2D
+var intro_active := false
 var lock_was_visible := false
 var dialogue: PanelContainer
 var dialogue_name: Label
@@ -52,10 +54,19 @@ var lock_status: Label
 var lock_sequence_label: Label
 var cabinet_unlocked := false
 var packaging_panel: PanelContainer
-var packaging_status: Label
+var packaging_title: Label
+var packaging_question: Label
+var packaging_preview: TextureRect
 var packaging_choices: VBoxContainer
 var packaging_solved := false
 var packaging_was_visible := false
+var case_panel: PanelContainer
+var case_title: Label
+var case_status: Label
+var case_question: Label
+var case_choices: VBoxContainer
+var case_step := 0
+var case_completed := false
 var selected_symbols: Array[int] = []
 var lock_code: Array[int] = []
 var previous_lock_code: Array[int] = []
@@ -63,15 +74,36 @@ var notebook_clues_text: Label
 var pulse_time := 0.0
 
 const DIALOGUE_LINES := [
-	{"speaker": "استاد قلم‌زن", "text": "آفرین، کارآگاه! خوب همه‌جا را گشتی. من قطعه را ساعت ۴:۴۵، درست پیش از بیرون رفتنم، توی جعبه دیدم."},
-	{"speaker": "کارآگاه", "text": "پس ساعت جیبی می‌تواند زمان گم‌شدنش را بگوید؟"},
-	{"speaker": "استاد قلم‌زن", "text": "نه، آن ساعت صبح افتاد و از کار افتاد. اما دوربین بازار، ۳۵ دقیقه بعد از ساعت ۴:۲۰، یک نفر را با بقچه دیده."}
+	{"speaker": "استاد قلم‌زن", "text": "آفرین، کارآگاه! حسابی گشتی. من ساعت ۴:۴۵، درست قبل از بیرون رفتنم، پلاک را توی جعبه دیدم."},
+	{"speaker": "کارآگاه", "text": "پس ساعت جیبی می‌گوید پلاک کی گم شده؟"},
+	{"speaker": "استاد قلم‌زن", "text": "نه، آن ساعت صبح افتاد و خراب شد. ولی دوربین بازار ۳۵ دقیقه بعد از ۴:۲۰، یک نفر را با بقچه دیده."}
 ]
 
 const ASSISTANT_DIALOGUE_LINES := [
-	{"speaker": "شاگرد مغازه", "text": "من از ساعت پنج تا پنج‌وربع توی انبار بودم؛ اصلاً بیرون نرفتم."},
-	{"speaker": "کارآگاه", "text": "پس مطمئنی در این مدت از انبار بیرون نرفتی؟"},
-	{"speaker": "شاگرد مغازه", "text": "مطمئنم... فقط فکر می‌کنم اگر یک قطعه اصل نباشد، نباید برای نمایش گذاشته شود، مگر نه؟"}
+	{"speaker": "شاگرد مغازه", "text": "من از پنج تا پنج‌وربع توی انبار بودم؛ اصلاً هم بیرون نرفتم."},
+	{"speaker": "کارآگاه", "text": "یعنی مطمئنی حتی یک لحظه هم از انبار بیرون نرفتی؟"},
+	{"speaker": "شاگرد مغازه", "text": "آره... فقط به نظرم اگر یه کار اصل نباشه، نباید توی نمایشگاه نشونش بدن، نه؟"},
+	{"speaker": "پیک بازار", "text": "من نزدیک حجره بودم و یه بسته می‌بردم، ولی ساعت ۴:۴۰ رفتم. استاد می‌گه ساعت ۴:۴۵ هنوز پلاک توی جعبه بوده."},
+	{"speaker": "فروشندهٔ کناری", "text": "کاغذ بسته‌بندی را ساعت ۵:۱۰ به خودِ شاگرد فروختم. می‌گفت برای نگه‌داشتن یه چیز ظریف، کاغذ محکم می‌خواد."},
+	{"speaker": "مسئول انبار", "text": "من نزدیک کمد انبار بودم. دیدم شاگرد با همون کاغذ تازه، یه بسته را گذاشت توی کمد. فکر کردم وسیلهٔ نمایشگاهه."}
+]
+
+const CASE_QUESTIONS := [
+	{
+		"question": "با کنار هم گذاشتن همهٔ شواهد، مظنون اصلی پرونده کیست؟",
+		"choices": ["پیک بازار", "شاگرد مغازه", "فروشندهٔ کناری", "استاد قلم‌زن"],
+		"correct": 1
+	},
+	{
+		"question": "کدام مدرک، شاگرد را به بستهٔ داخل کمد وصل می‌کند؟",
+		"choices": ["نخ قرمز", "رد کفش", "رسید خرید، تطبیق بسته‌بندی و گفتهٔ مسئول انبار", "ساعت شکسته"],
+		"correct": 2
+	},
+	{
+		"question": "دلیل درست برای نتیجه‌گیری چیست؟",
+		"choices": ["چون نخ قرمز داشت", "چون دروغ گفت", "چون کاغذ را خرید، بستهٔ حاوی قطعه را در کمد گذاشت و ادعایش دربارهٔ انبار درست نبود"],
+		"correct": 2
+	}
 ]
 
 func _ready() -> void:
@@ -96,12 +128,13 @@ func build_scene() -> void:
 	build_hotspots()
 	build_footer()
 	build_clue_panel()
+	show_intro()
 
 func build_header() -> void:
 	scene_header = PanelContainer.new()
 	scene_header.position = Vector2(28, 22)
 	scene_header.size = Vector2(430, 92)
-	scene_header.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.90), Color(0.88, 0.64, 0.25, 0.85), 16, 2))
+	scene_header.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.81), Color(0.88, 0.64, 0.25, 0.85), 16, 2))
 	add_child(scene_header)
 	var content := VBoxContainer.new()
 	content.add_theme_constant_override("separation", 2)
@@ -148,7 +181,7 @@ func build_footer() -> void:
 	game_footer.offset_top = -94
 	game_footer.offset_right = 390
 	game_footer.offset_bottom = -24
-	game_footer.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.88), Color(0.88, 0.64, 0.25, 0.75), 14, 2))
+	game_footer.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.792), Color(0.88, 0.64, 0.25, 0.75), 14, 2))
 	add_child(game_footer)
 	var row := HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -187,7 +220,7 @@ func build_clue_panel() -> void:
 	modal.offset_right = 270
 	modal.offset_bottom = 155
 	modal.visible = false
-	modal.add_theme_stylebox_override("panel", panel_style(Color(0.12, 0.067, 0.032, 0.82), Color(0.96, 0.74, 0.31, 1), 18, 3))
+	modal.add_theme_stylebox_override("panel", panel_style(Color(0.12, 0.067, 0.032, 0.738), Color(0.96, 0.74, 0.31, 1), 18, 3))
 	add_child(modal)
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 14)
@@ -216,6 +249,8 @@ func build_clue_panel() -> void:
 	build_notebook()
 
 func show_clue(clue: Dictionary, button: Button) -> void:
+	if intro_active:
+		return
 	var first_discovery := not found_clues.has(clue.id)
 	found_clues[clue.id] = true
 	button.disabled = true
@@ -235,15 +270,30 @@ func show_clue(clue: Dictionary, button: Button) -> void:
 		notebook_button.disabled = false
 
 func close_clue_panel() -> void:
+	if intro_active:
+		intro_active = false
+		modal.hide()
+		modal_close_button.text = "ادامهٔ جست‌وجو"
+		prompt_label.text = "پنج سرنخ را پیدا کن تا بفهمیم چه کسی قطعه را برداشته است."
+		return
 	modal.hide()
 	if found_clues.size() == CLUES.size():
 		open_notebook()
+
+func show_intro() -> void:
+	intro_active = true
+	modal_title.text = "درخواست استاد قلم‌زن"
+	modal_description.text = "یه پلاک قلم‌زنی‌شدهٔ ارزشمند از جعبهٔ من گم شده و باید فردا برای نمایشگاه آماده باشد. شاگردم امروز نگران نشان کم‌رنگ روی آن بود؛ گفتم بعد از آماده‌سازی با هم نگاهش می‌کنیم. حالا سرنخ‌ها را پیدا کن و ببین چه اتفاقی افتاده."
+	modal_close_button.text = "شروع تحقیق"
+	modal.show()
 
 func reset_investigation() -> void:
 	found_clues.clear()
 	time_puzzle_solved = false
 	cabinet_unlocked = false
 	packaging_solved = false
+	case_step = 0
+	case_completed = false
 	selected_symbols.clear()
 	generate_lock_code()
 	update_notebook_code_text()
@@ -261,15 +311,18 @@ func reset_investigation() -> void:
 		lock_panel.hide()
 	if packaging_panel:
 		packaging_panel.hide()
+	if case_panel:
+		case_panel.hide()
 	scene_background.texture = BACKGROUND
 	notebook_button.disabled = true
 	modal_close_button.text = "ادامهٔ جست‌وجو"
-	prompt_label.text = "دنبال نقطه‌های طلایی بگرد و روشون بزن!"
+	prompt_label.text = ""
 	for button in hotspot_buttons:
 		button.disabled = false
 		button.show()
 		button.tooltip_text = "بررسی سرنخ"
 	update_clue_count()
+	show_intro()
 
 func update_clue_count() -> void:
 	clue_count_label.text = "حجرهٔ استاد قلم‌زن  •  سرنخ‌ها: %d از %d" % [found_clues.size(), CLUES.size()]
@@ -384,7 +437,7 @@ func build_dialogue() -> void:
 	dialogue.offset_right = 430
 	dialogue.offset_bottom = 230
 	dialogue.visible = false
-	dialogue.add_theme_stylebox_override("panel", panel_style(Color(0.11, 0.06, 0.03, 0.83), Color(0.72, 0.82, 0.68, 1), 18, 3))
+	dialogue.add_theme_stylebox_override("panel", panel_style(Color(0.11, 0.06, 0.03, 0.747), Color(0.72, 0.82, 0.68, 1), 18, 3))
 	add_child(dialogue)
 	var content := VBoxContainer.new()
 	content.add_theme_constant_override("separation", 16)
@@ -526,7 +579,7 @@ func build_route_panel() -> void:
 	route_panel.offset_top = -245
 	route_panel.offset_right = 375
 	route_panel.offset_bottom = 245
-	route_panel.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.82), Color(0.88, 0.64, 0.25, 1), 18, 3))
+	route_panel.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.738), Color(0.88, 0.64, 0.25, 1), 18, 3))
 	add_child(route_panel)
 	var content := VBoxContainer.new()
 	content.add_theme_constant_override("separation", 14)
@@ -567,7 +620,7 @@ func choose_route(is_correct: bool) -> void:
 		for choice in route_choices.get_children():
 			choice.queue_free()
 		var next := Button.new()
-		next.text = "با شاگرد حرف بزنیم"
+		next.text = "با افراد مرتبط گفت‌وگو کنیم"
 		next.custom_minimum_size = Vector2(290, 46)
 		next.add_theme_font_size_override("font_size", 18)
 		next.pressed.connect(start_assistant_dialogue)
@@ -579,7 +632,7 @@ func choose_route(is_correct: bool) -> void:
 func start_assistant_dialogue() -> void:
 	route_panel.hide()
 	scene_background.texture = ASSISTANT_DIALOGUE_BACKGROUND
-	prompt_label.text = "با شاگرد مغازه حرف بزن و خوب به جواب‌هایش گوش کن."
+	prompt_label.text = "با افراد مرتبط حرف بزن و گفته‌هایشان را با سرنخ‌ها مقایسه کن."
 	build_assistant_dialogue()
 	assistant_dialogue_step = 0
 	assistant_panel.show()
@@ -597,7 +650,7 @@ func build_assistant_dialogue() -> void:
 	assistant_panel.offset_top = -290
 	assistant_panel.offset_right = 480
 	assistant_panel.offset_bottom = -22
-	assistant_panel.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.81), Color(0.72, 0.82, 0.68, 1), 18, 3))
+	assistant_panel.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.729), Color(0.72, 0.82, 0.68, 1), 18, 3))
 	add_child(assistant_panel)
 	var content := VBoxContainer.new()
 	content.add_theme_constant_override("separation", 12)
@@ -658,7 +711,7 @@ func build_lock_panel() -> void:
 	lock_panel.offset_top = -220
 	lock_panel.offset_right = 380
 	lock_panel.offset_bottom = 220
-	lock_panel.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.82), Color(0.96, 0.74, 0.31, 1), 18, 3))
+	lock_panel.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.738), Color(0.96, 0.74, 0.31, 1), 18, 3))
 	add_child(lock_panel)
 	var content := VBoxContainer.new()
 	content.add_theme_constant_override("separation", 13)
@@ -729,6 +782,7 @@ func clear_lock_sequence() -> void:
 func start_packaging_stage() -> void:
 	lock_panel.hide()
 	build_packaging_panel()
+	reset_packaging_stage()
 	packaging_panel.show()
 
 func build_packaging_panel() -> void:
@@ -743,43 +797,61 @@ func build_packaging_panel() -> void:
 	packaging_panel.offset_top = -220
 	packaging_panel.offset_right = 390
 	packaging_panel.offset_bottom = 220
-	packaging_panel.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.82), Color(0.72, 0.82, 0.68, 1), 18, 3))
+	packaging_panel.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.738), Color(0.72, 0.82, 0.68, 1), 18, 3))
 	add_child(packaging_panel)
 	var content := VBoxContainer.new()
 	content.add_theme_constant_override("separation", 13)
 	packaging_panel.add_child(content)
-	var title := Label.new()
-	title.text = "بررسی بسته‌بندی"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	title.text_direction = Control.TEXT_DIRECTION_RTL
-	title.add_theme_font_size_override("font_size", 30)
-	title.add_theme_color_override("font_color", Color("d9efbd"))
-	content.add_child(title)
-	packaging_status = Label.new()
-	packaging_status.text = "این بسته را داخل کمد پیدا کردی. خوب به شکل کاغذ، طرح و لبه‌هایش نگاه کن."
-	packaging_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	packaging_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	packaging_status.text_direction = Control.TEXT_DIRECTION_RTL
-	packaging_status.add_theme_font_size_override("font_size", 20)
-	packaging_status.add_theme_color_override("font_color", Color("fff6e6"))
-	content.add_child(packaging_status)
-	var package_preview := TextureRect.new()
-	package_preview.texture = WRAPPED_PACKAGE
-	package_preview.custom_minimum_size = Vector2(240, 135)
-	package_preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	package_preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	package_preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	content.add_child(package_preview)
-	var question := Label.new()
-	question.text = "حالا کدام نمونه با این بسته جور درمی‌آید؟"
-	question.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	question.text_direction = Control.TEXT_DIRECTION_RTL
-	question.add_theme_font_size_override("font_size", 19)
-	question.add_theme_color_override("font_color", Color("fff6e6"))
-	content.add_child(question)
+	packaging_title = Label.new()
+	packaging_title.text = "بستهٔ داخل کمد"
+	packaging_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	packaging_title.text_direction = Control.TEXT_DIRECTION_RTL
+	packaging_title.add_theme_font_size_override("font_size", 30)
+	packaging_title.add_theme_color_override("font_color", Color("d9efbd"))
+	content.add_child(packaging_title)
+	packaging_preview = TextureRect.new()
+	packaging_preview.texture = WRAPPED_PACKAGE
+	packaging_preview.custom_minimum_size = Vector2(240, 135)
+	packaging_preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	packaging_preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	packaging_preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	content.add_child(packaging_preview)
+	packaging_question = Label.new()
+	packaging_question.visible = false
+	packaging_question.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	packaging_question.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	packaging_question.text_direction = Control.TEXT_DIRECTION_RTL
+	packaging_question.add_theme_font_size_override("font_size", 19)
+	packaging_question.add_theme_color_override("font_color", Color("fff6e6"))
+	content.add_child(packaging_question)
 	packaging_choices = VBoxContainer.new()
 	packaging_choices.add_theme_constant_override("separation", 9)
 	content.add_child(packaging_choices)
+
+func reset_packaging_stage() -> void:
+	if not packaging_choices:
+		return
+	packaging_solved = false
+	packaging_title.text = "بستهٔ داخل کمد"
+	packaging_question.text = ""
+	packaging_question.hide()
+	packaging_preview.show()
+	for choice in packaging_choices.get_children():
+		choice.queue_free()
+	var inspect := Button.new()
+	inspect.text = "بسته را بررسی کردم"
+	inspect.custom_minimum_size = Vector2(250, 46)
+	inspect.add_theme_font_size_override("font_size", 18)
+	inspect.pressed.connect(show_packaging_question)
+	packaging_choices.add_child(inspect)
+
+func show_packaging_question() -> void:
+	for choice in packaging_choices.get_children():
+		choice.queue_free()
+	packaging_title.text = "تطبیق بسته‌بندی"
+	packaging_question.text = "کدام نمونه با این بسته جور درمی‌آید؟"
+	packaging_question.show()
+	packaging_preview.hide()
 	add_packaging_choice("کاغذ سادهٔ کرم", false)
 	add_packaging_choice("کاغذ گل‌دار با لبهٔ پاره", true)
 	add_packaging_choice("کاغذ راه‌راه آبی", false)
@@ -796,19 +868,121 @@ func choose_packaging(is_correct: bool) -> void:
 	if packaging_solved:
 		return
 	if not is_correct:
-		packaging_status.text = "این نمونه جور نیست. به نقش کاغذ و لبهٔ پارهٔ آن دقت کن."
+		for choice in packaging_choices.get_children():
+			choice.queue_free()
+		packaging_question.text = "این یکی جور نیست. می‌خوای دوباره بسته را ببینی؟"
+		var review := Button.new()
+		review.text = "دوباره بسته را ببین"
+		review.custom_minimum_size = Vector2(250, 46)
+		review.add_theme_font_size_override("font_size", 18)
+		review.pressed.connect(reset_packaging_stage)
+		packaging_choices.add_child(review)
 		return
 	packaging_solved = true
 	for choice in packaging_choices.get_children():
 		choice.queue_free()
-	packaging_status.text = "آفرین! نقش کاغذ و لبهٔ پاره دقیقاً با بستهٔ کمد جور شد. این بسته یک مدرک مهم برای مرور پرونده است."
+	packaging_question.text = "آفرین! نقش کاغذ و لبهٔ پاره با بستهٔ کمد جور شد."
 	var next := Button.new()
 	next.text = "مرحلهٔ بعد: مرور پرونده"
 	next.custom_minimum_size = Vector2(270, 46)
 	next.add_theme_font_size_override("font_size", 18)
-	next.pressed.connect(func() -> void: packaging_panel.hide())
+	next.pressed.connect(start_case_review)
 	packaging_choices.add_child(next)
 	prompt_label.text = "بسته‌بندی هم بررسی شد. قدم بعدی: مرور همهٔ مدرک‌ها و نتیجه‌گیری."
+
+func start_case_review() -> void:
+	packaging_panel.hide()
+	scene_background.texture = CASE_REVIEW_BACKGROUND
+	prompt_label.text = "میز نتیجه‌گیری: شواهد را با دقت کنار هم بگذار."
+	build_case_panel()
+	case_step = 0
+	case_completed = false
+	case_panel.show()
+	show_case_question()
+
+func build_case_panel() -> void:
+	if case_panel:
+		return
+	case_panel = PanelContainer.new()
+	case_panel.anchor_left = 0.5
+	case_panel.anchor_top = 0.5
+	case_panel.anchor_right = 0.5
+	case_panel.anchor_bottom = 0.5
+	case_panel.offset_left = -465
+	case_panel.offset_top = -275
+	case_panel.offset_right = 465
+	case_panel.offset_bottom = 275
+	case_panel.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.792), Color(0.96, 0.74, 0.31, 1), 18, 3))
+	add_child(case_panel)
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 12)
+	case_panel.add_child(content)
+	case_title = Label.new()
+	case_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	case_title.text_direction = Control.TEXT_DIRECTION_RTL
+	case_title.add_theme_font_size_override("font_size", 31)
+	case_title.add_theme_color_override("font_color", Color("ffe09a"))
+	content.add_child(case_title)
+	case_status = Label.new()
+	case_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	case_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	case_status.text_direction = Control.TEXT_DIRECTION_RTL
+	case_status.add_theme_font_size_override("font_size", 18)
+	case_status.add_theme_color_override("font_color", Color("d9efbd"))
+	content.add_child(case_status)
+	case_question = Label.new()
+	case_question.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	case_question.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	case_question.text_direction = Control.TEXT_DIRECTION_RTL
+	case_question.add_theme_font_size_override("font_size", 22)
+	case_question.add_theme_color_override("font_color", Color("fff6e6"))
+	content.add_child(case_question)
+	case_choices = VBoxContainer.new()
+	case_choices.add_theme_constant_override("separation", 8)
+	content.add_child(case_choices)
+
+func show_case_question() -> void:
+	for choice in case_choices.get_children():
+		choice.queue_free()
+	var current: Dictionary = CASE_QUESTIONS[case_step]
+	case_title.text = "تشکیل پرونده  •  گام %d از %d" % [case_step + 1, CASE_QUESTIONS.size()]
+	case_status.text = "رسیدِ خرید، تطبیق بسته‌بندی، گفتهٔ مسئول انبار و قطعهٔ بازیابی‌شده را با هم مرور کن."
+	case_question.text = current.question
+	for index in range(current.choices.size()):
+		var button := Button.new()
+		button.text = current.choices[index]
+		button.custom_minimum_size = Vector2(540, 42)
+		button.add_theme_font_size_override("font_size", 17)
+		button.pressed.connect(choose_case_answer.bind(index))
+		case_choices.add_child(button)
+
+func choose_case_answer(answer_index: int) -> void:
+	if case_completed:
+		return
+	var current: Dictionary = CASE_QUESTIONS[case_step]
+	if answer_index != current.correct:
+		case_status.text = "مدرکت کافی نیست؛ دوباره بررسی کن. این نشانه به‌تنهایی چه ارتباطی با بستهٔ داخل کمد دارد؟"
+		return
+	case_step += 1
+	if case_step < CASE_QUESTIONS.size():
+		show_case_question()
+		return
+	show_case_ending()
+
+func show_case_ending() -> void:
+	case_completed = true
+	for choice in case_choices.get_children():
+		choice.queue_free()
+	case_title.text = "پرونده حل شد!"
+	case_status.text = "زنجیرهٔ شواهد کامل شد: شاگرد کاغذ را خرید، بستهٔ حاوی قطعه را در کمد گذاشت و ادعای ماندنش در انبار هم درست نبود."
+	case_question.text = "شاگرد می‌گوید: «من برداشتمش. فکر کردم عوض شده و ترسیدم به‌جای یه کار اصل، توی نمایشگاه نشانش بدن.»\n\nاستاد می‌گوید: «پلاک اصل است؛ نشانش توی یک تعمیر قدیمی کم‌رنگ شده. خوب شد نگرانی‌ات را گفتی، ولی نباید یواشکی پنهانش می‌کردی.»"
+	var restart := Button.new()
+	restart.text = "شروع دوبارهٔ پرونده"
+	restart.custom_minimum_size = Vector2(255, 46)
+	restart.add_theme_font_size_override("font_size", 18)
+	restart.pressed.connect(reset_investigation)
+	case_choices.add_child(restart)
+	prompt_label.text = "پرونده با بررسی شواهد و پذیرفتن مسئولیت حل شد."
 
 func update_lock_sequence() -> void:
 	if selected_symbols.is_empty():

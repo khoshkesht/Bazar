@@ -8,6 +8,8 @@ const WAREHOUSE_BACKGROUND := preload("res://sources/pics/s4.png")
 const NOTEBOOK_BACKGROUND := preload("res://sources/pics/note.png")
 const CASE_REVIEW_BACKGROUND := preload("res://sources/pics/s5.png")
 const MAINPAGE_BACKGROUND := preload("res://sources/pics/mainpage.png")
+const DISABLED_CASE_BUTTON := preload("res://sources/pics/bt-disable.png")
+const HOVER_CASE_BUTTON := preload("res://sources/pics/bt-hover.png")
 const WRAPPED_PACKAGE := preload("res://sources/pics/clue_wrapped_package.png")
 const CLUES := [
 	{"id": "receipt", "title": "رسید کاغذی", "description": "یه رسید تازه کنار پیشخوان افتاده! شاید بگوید چه کسی و چه وقتی خرید کرده.", "position": Vector2(0.36, 0.36), "size": Vector2(0.075, 0.10)},
@@ -144,12 +146,23 @@ func build_main_menu() -> void:
 	main_menu.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	main_menu.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(main_menu)
-	var start := Button.new()
+	for position_x in [310, 535, 768, 1001]:
+		var disabled_button := TextureButton.new()
+		disabled_button.texture_disabled = DISABLED_CASE_BUTTON
+		disabled_button.position = Vector2(position_x, 507)
+		disabled_button.size = Vector2(210, 72)
+		disabled_button.ignore_texture_size = true
+		disabled_button.stretch_mode = TextureButton.STRETCH_SCALE
+		disabled_button.disabled = true
+		main_menu.add_child(disabled_button)
+	var start := TextureButton.new()
 	# مختصات دکمهٔ آبیِ «شروع پرونده» روی کارت اول در تصویر ۱۶:۹ صفحهٔ اصلی است.
 	start.position = Vector2(73, 518)
 	start.size = Vector2(215, 48)
-	start.flat = true
-	start.modulate = Color(1, 1, 1, 0)
+	start.texture_hover = HOVER_CASE_BUTTON
+	start.texture_pressed = HOVER_CASE_BUTTON
+	start.ignore_texture_size = true
+	start.stretch_mode = TextureButton.STRETCH_SCALE
 	start.tooltip_text = "شروع راز بازار بزرگ"
 	start.pressed.connect(begin_bazaar_case)
 	main_menu.add_child(start)
@@ -422,7 +435,7 @@ func build_notebook() -> void:
 	add_child(notebook)
 	var title := Label.new()
 	title.text = "دفتر کارآگاه"
-	title.position = Vector2(350, 82)
+	title.position = Vector2(420, 100)
 	title.size = Vector2(360, 42)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	title.text_direction = Control.TEXT_DIRECTION_RTL
@@ -431,7 +444,7 @@ func build_notebook() -> void:
 	notebook.add_child(title)
 	var intro := Label.new()
 	intro.text = "سرنخ‌های پرونده"
-	intro.position = Vector2(350, 128)
+	intro.position = Vector2(440, 128)
 	intro.size = Vector2(360, 30)
 	intro.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	intro.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
@@ -440,7 +453,7 @@ func build_notebook() -> void:
 	intro.add_theme_color_override("font_color", Color("57351e"))
 	notebook.add_child(intro)
 	notebook_clues_text = Label.new()
-	notebook_clues_text.position = Vector2(330, 165)
+	notebook_clues_text.position = Vector2(430, 165)
 	notebook_clues_text.size = Vector2(400, 235)
 	notebook_clues_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	notebook_clues_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
@@ -659,7 +672,9 @@ func show_time_question() -> void:
 	time_answers.add_theme_constant_override("separation", 16)
 	dialogue.get_child(0).add_child(time_answers)
 	var correct_minutes := 4 * 60 + 20 + camera_delay
-	for answer in [format_clock_time(correct_minutes - 5), format_clock_time(correct_minutes), format_clock_time(correct_minutes + 5)]:
+	var answers: Array[String] = [format_clock_time(correct_minutes - 5), format_clock_time(correct_minutes), format_clock_time(correct_minutes + 5)]
+	shuffle_answers(answers)
+	for answer in answers:
 		var button := Button.new()
 		button.text = answer
 		button.custom_minimum_size = Vector2(125, 46)
@@ -1178,6 +1193,15 @@ func to_persian_digits(text: String) -> String:
 		result = result.replace(str(digit), persian_digits[digit])
 	return result
 
+func shuffle_answers(answers: Array[String]) -> void:
+	var random := RandomNumberGenerator.new()
+	random.randomize()
+	for index in range(answers.size() - 1, 0, -1):
+		var other_index := random.randi_range(0, index)
+		var temporary := answers[index]
+		answers[index] = answers[other_index]
+		answers[other_index] = temporary
+
 func format_code(code: Array[int]) -> String:
 	var shown: Array[String] = []
 	for symbol in code:
@@ -1186,7 +1210,7 @@ func format_code(code: Array[int]) -> String:
 
 func update_notebook_code_text() -> void:
 	if notebook_clues_text:
-		notebook_clues_text.text = "• ساعت روی ۴:۲۰ مانده، اما خراب است\n• رسید کاغذی، نخ قرمز، رد کفش و کاغذ اعداد\n• ترتیب روی کاغذ: %s\n\nاین دفتر همیشه برای مرور سرنخ‌ها در دسترس است." % format_code(lock_code)
+		notebook_clues_text.text = "• ساعت روی ۴:۲۰ مانده، اما خراب است\n• رسید کاغذی، نخ قرمز، رد کفش و کاغذ اعداد\n• ترتیب روی کاغذ: %s\n\nسرنخ ها رو حفظ کن." % format_code(lock_code)
 
 func panel_style(background: Color, border: Color, radius: float, width: float) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()

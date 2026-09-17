@@ -7,6 +7,7 @@ const MASTER_DIALOGUE_BACKGROUND := preload("res://sources/pics/oldman.png")
 const WAREHOUSE_BACKGROUND := preload("res://sources/pics/s4.png")
 const NOTEBOOK_BACKGROUND := preload("res://sources/pics/note.png")
 const CASE_REVIEW_BACKGROUND := preload("res://sources/pics/s5.png")
+const MAINPAGE_BACKGROUND := preload("res://sources/pics/mainpage.png")
 const WRAPPED_PACKAGE := preload("res://sources/pics/clue_wrapped_package.png")
 const CLUES := [
 	{"id": "receipt", "title": "رسید کاغذی", "description": "یه رسید تازه کنار پیشخوان افتاده! شاید بگوید چه کسی و چه وقتی خرید کرده.", "position": Vector2(0.36, 0.36), "size": Vector2(0.075, 0.10)},
@@ -19,6 +20,8 @@ const CLUES := [
 var found_clues: Dictionary = {}
 var hotspot_buttons: Array[Button] = []
 var clue_count_label: Label
+var score_label: Label
+var home_button: Button
 var prompt_label: Label
 var game_footer: PanelContainer
 var scene_shade: ColorRect
@@ -32,6 +35,9 @@ var notebook_button: Button
 var notebook_talk_button: Button
 var notebook_return_texture: Texture2D
 var intro_active := false
+var main_menu: Control
+var score_confirmation: PanelContainer
+var score := 50
 var lock_was_visible := false
 var dialogue: PanelContainer
 var dialogue_name: Label
@@ -72,11 +78,12 @@ var lock_code: Array[int] = []
 var previous_lock_code: Array[int] = []
 var notebook_clues_text: Label
 var pulse_time := 0.0
+var camera_delay := 35
 
 const DIALOGUE_LINES := [
 	{"speaker": "استاد قلم‌زن", "text": "آفرین، کارآگاه! حسابی گشتی. من ساعت ۴:۴۵، درست قبل از بیرون رفتنم، پلاک را توی جعبه دیدم."},
 	{"speaker": "کارآگاه", "text": "پس ساعت جیبی می‌گوید پلاک کی گم شده؟"},
-	{"speaker": "استاد قلم‌زن", "text": "نه، آن ساعت صبح افتاد و خراب شد. ولی دوربین بازار ۳۵ دقیقه بعد از ۴:۲۰، یک نفر را با بقچه دیده."}
+	{"speaker": "استاد قلم‌زن", "text": "نه، آن ساعت صبح افتاد و خراب شد. ولی دوربین بازار کمی بعد از ۴:۲۰، یک نفر را با بقچه دیده."}
 ]
 
 const ASSISTANT_DIALOGUE_LINES := [
@@ -108,7 +115,10 @@ const CASE_QUESTIONS := [
 
 func _ready() -> void:
 	generate_lock_code()
+	generate_time_delay()
 	build_scene()
+	build_main_menu()
+	show_main_menu()
 
 func build_scene() -> void:
 	scene_background = TextureRect.new()
@@ -128,7 +138,44 @@ func build_scene() -> void:
 	build_hotspots()
 	build_footer()
 	build_clue_panel()
-	show_intro()
+
+func build_main_menu() -> void:
+	main_menu = Control.new()
+	main_menu.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	main_menu.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(main_menu)
+	var start := Button.new()
+	# مختصات دکمهٔ آبیِ «شروع پرونده» روی کارت اول در تصویر ۱۶:۹ صفحهٔ اصلی است.
+	start.position = Vector2(73, 518)
+	start.size = Vector2(215, 48)
+	start.flat = true
+	start.modulate = Color(1, 1, 1, 0)
+	start.tooltip_text = "شروع راز بازار بزرگ"
+	start.pressed.connect(begin_bazaar_case)
+	main_menu.add_child(start)
+
+func show_main_menu() -> void:
+	scene_background.texture = MAINPAGE_BACKGROUND
+	scene_shade.hide()
+	scene_header.hide()
+	home_button.hide()
+	game_footer.hide()
+	modal.hide()
+	for hotspot in hotspot_buttons:
+		hotspot.hide()
+	main_menu.show()
+	main_menu.move_to_front()
+
+func begin_bazaar_case() -> void:
+	score = 50
+	reset_investigation()
+	main_menu.hide()
+	update_clue_count()
+
+func return_to_main_menu() -> void:
+	reset_investigation()
+	modal.hide()
+	show_main_menu()
 
 func build_header() -> void:
 	scene_header = PanelContainer.new()
@@ -152,7 +199,26 @@ func build_header() -> void:
 	clue_count_label.add_theme_font_size_override("font_size", 17)
 	clue_count_label.add_theme_color_override("font_color", Color("f5ead8"))
 	content.add_child(clue_count_label)
+	score_label = Label.new()
+	score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	score_label.text_direction = Control.TEXT_DIRECTION_RTL
+	score_label.add_theme_font_size_override("font_size", 17)
+	score_label.add_theme_color_override("font_color", Color("ffe09a"))
+	content.add_child(score_label)
 	update_clue_count()
+	home_button = Button.new()
+	home_button.text = "صفحهٔ اصلی"
+	home_button.anchor_left = 1.0
+	home_button.anchor_top = 0.0
+	home_button.anchor_right = 1.0
+	home_button.anchor_bottom = 0.0
+	home_button.offset_left = -205
+	home_button.offset_top = 24
+	home_button.offset_right = -28
+	home_button.offset_bottom = 72
+	home_button.add_theme_font_size_override("font_size", 17)
+	home_button.pressed.connect(return_to_main_menu)
+	add_child(home_button)
 
 func build_hotspots() -> void:
 	for clue in CLUES:
@@ -296,12 +362,14 @@ func reset_investigation() -> void:
 	case_completed = false
 	selected_symbols.clear()
 	generate_lock_code()
+	generate_time_delay()
 	update_notebook_code_text()
 	modal.hide()
 	notebook.hide()
 	game_footer.show()
 	scene_shade.show()
 	scene_header.show()
+	home_button.show()
 	dialogue.hide()
 	if route_panel:
 		route_panel.hide()
@@ -313,6 +381,8 @@ func reset_investigation() -> void:
 		packaging_panel.hide()
 	if case_panel:
 		case_panel.hide()
+	if score_confirmation:
+		score_confirmation.hide()
 	scene_background.texture = BACKGROUND
 	notebook_button.disabled = true
 	modal_close_button.text = "ادامهٔ جست‌وجو"
@@ -326,6 +396,11 @@ func reset_investigation() -> void:
 
 func update_clue_count() -> void:
 	clue_count_label.text = "حجرهٔ استاد قلم‌زن  •  سرنخ‌ها: %d از %d" % [found_clues.size(), CLUES.size()]
+	score_label.text = "امتیاز پرونده: %d سکه" % score
+
+func lose_score(amount: int) -> void:
+	score = maxi(0, score - amount)
+	update_clue_count()
 
 func _process(delta: float) -> void:
 	pulse_time += delta
@@ -393,6 +468,12 @@ func build_notebook() -> void:
 	build_dialogue()
 
 func open_notebook() -> void:
+	if lock_panel != null and lock_panel.visible and not cabinet_unlocked:
+		show_notebook_score_confirmation()
+		return
+	open_notebook_screen()
+
+func open_notebook_screen() -> void:
 	if found_clues.size() == CLUES.size():
 		modal.hide()
 		notebook_return_texture = scene_background.texture
@@ -402,6 +483,7 @@ func open_notebook() -> void:
 		game_footer.hide()
 		for hotspot in hotspot_buttons:
 			hotspot.hide()
+		home_button.hide()
 		lock_was_visible = lock_panel != null and lock_panel.visible
 		if lock_was_visible:
 			lock_panel.hide()
@@ -412,11 +494,68 @@ func open_notebook() -> void:
 		notebook.move_to_front()
 		notebook.show()
 
+func show_notebook_score_confirmation() -> void:
+	if not score_confirmation:
+		score_confirmation = PanelContainer.new()
+		score_confirmation.anchor_left = 0.5
+		score_confirmation.anchor_top = 0.5
+		score_confirmation.anchor_right = 0.5
+		score_confirmation.anchor_bottom = 0.5
+		score_confirmation.offset_left = -300
+		score_confirmation.offset_top = -150
+		score_confirmation.offset_right = 300
+		score_confirmation.offset_bottom = 150
+		score_confirmation.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.82), Color(0.96, 0.74, 0.31, 1), 18, 3))
+		add_child(score_confirmation)
+		var content := VBoxContainer.new()
+		content.add_theme_constant_override("separation", 14)
+		score_confirmation.add_child(content)
+		var title := Label.new()
+		title.text = "کمک از دفتر کارآگاه"
+		title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		title.text_direction = Control.TEXT_DIRECTION_RTL
+		title.add_theme_font_size_override("font_size", 27)
+		title.add_theme_color_override("font_color", Color("ffe09a"))
+		content.add_child(title)
+		var message := Label.new()
+		message.text = "دیدن ترتیب رمز در دفترچه، ۵ سکه از امتیازت کم می‌کند. می‌خواهی دفترچه را باز کنی؟"
+		message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		message.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		message.text_direction = Control.TEXT_DIRECTION_RTL
+		message.add_theme_font_size_override("font_size", 20)
+		message.add_theme_color_override("font_color", Color("fff6e6"))
+		content.add_child(message)
+		var buttons := HBoxContainer.new()
+		buttons.alignment = BoxContainer.ALIGNMENT_CENTER
+		buttons.add_theme_constant_override("separation", 16)
+		content.add_child(buttons)
+		var cancel := Button.new()
+		cancel.text = "نه، خودم حل می‌کنم"
+		cancel.custom_minimum_size = Vector2(205, 46)
+		cancel.add_theme_font_size_override("font_size", 17)
+		cancel.pressed.connect(func() -> void: score_confirmation.hide())
+		buttons.add_child(cancel)
+		var confirm := Button.new()
+		confirm.text = "بله، ۵ سکه کم شود"
+		confirm.custom_minimum_size = Vector2(205, 46)
+		confirm.add_theme_font_size_override("font_size", 17)
+		confirm.pressed.connect(confirm_notebook_score_cost)
+		buttons.add_child(confirm)
+	score_confirmation.show()
+	score_confirmation.move_to_front()
+
+func confirm_notebook_score_cost() -> void:
+	score_confirmation.hide()
+	lose_score(5)
+	prompt_label.text = "۵ سکه برای دیدن دفترچه کم شد."
+	open_notebook_screen()
+
 func close_notebook() -> void:
 	if notebook_return_texture:
 		scene_background.texture = notebook_return_texture
 	scene_shade.show()
 	scene_header.show()
+	home_button.show()
 	game_footer.show()
 	if lock_was_visible and lock_panel:
 		lock_panel.show()
@@ -481,7 +620,10 @@ func reset_dialogue_next_action() -> void:
 func show_dialogue_line() -> void:
 	var line: Dictionary = DIALOGUE_LINES[dialogue_step]
 	dialogue_name.text = line.speaker
-	dialogue_text.text = line.text
+	if dialogue_step == DIALOGUE_LINES.size() - 1:
+		dialogue_text.text = "نه، آن ساعت صبح افتاد و خراب شد. ولی دوربین بازار %d دقیقه بعد از ۴:۲۰، یک نفر را با بقچه دیده." % camera_delay
+	else:
+		dialogue_text.text = line.text
 	if dialogue_step == DIALOGUE_LINES.size() - 1:
 		dialogue_next_button.text = "حل معمای زمان"
 	else:
@@ -501,7 +643,7 @@ func show_time_question() -> void:
 		time_answers = null
 	if time_puzzle_solved:
 		dialogue_name.text = "معمای زمان حل شده"
-		dialogue_text.text = "آفرین! جواب ۴:۵۵ را قبلاً پیدا کردی. حالا می‌توانیم راهی راهروی بازار شویم."
+		dialogue_text.text = "آفرین! جواب %s را قبلاً پیدا کردی. حالا می‌توانیم راهی راهروی بازار شویم." % camera_answer()
 		dialogue_next_button.show()
 		dialogue_next_button.text = "بریم راهروی بازار"
 		if dialogue_next_button.pressed.is_connected(show_next_dialogue):
@@ -510,13 +652,14 @@ func show_time_question() -> void:
 			dialogue_next_button.pressed.connect(start_corridor)
 		return
 	dialogue_name.text = "معمای زمان"
-	dialogue_text.text = "دوربین ۳۵ دقیقه بعد از ساعت ۴:۲۰، فردی با بقچه را دیده. ساعت دوربین چند بوده؟"
+	dialogue_text.text = "دوربین %d دقیقه بعد از ساعت ۴:۲۰، فردی با بقچه را دیده. ساعت دوربین چند بوده؟" % camera_delay
 	dialogue_next_button.hide()
 	time_answers = HBoxContainer.new()
 	time_answers.alignment = BoxContainer.ALIGNMENT_CENTER
 	time_answers.add_theme_constant_override("separation", 16)
 	dialogue.get_child(0).add_child(time_answers)
-	for answer in ["۴:۴۵", "۴:۵۵", "۵:۲۰"]:
+	var correct_minutes := 4 * 60 + 20 + camera_delay
+	for answer in [format_clock_time(correct_minutes - 5), format_clock_time(correct_minutes), format_clock_time(correct_minutes + 5)]:
 		var button := Button.new()
 		button.text = answer
 		button.custom_minimum_size = Vector2(125, 46)
@@ -534,16 +677,17 @@ func answer_time_question(answer: String) -> void:
 		time_answers.queue_free()
 		time_answers = null
 	dialogue_next_button.show()
-	if answer == "۴:۵۵":
+	if answer == camera_answer():
 		time_puzzle_solved = true
 		dialogue_name.text = "آفرین!"
-		dialogue_text.text = "درست گفتی: ۴:۲۰ + ۳۵ دقیقه می‌شود ۴:۵۵. حالا مسیر فردِ بقچه‌به‌دست را در راهروی بازار پیدا می‌کنیم."
+		dialogue_text.text = "درست گفتی: ۴:۲۰ + %d دقیقه می‌شود %s. حالا مسیر فردِ بقچه‌به‌دست را در راهروی بازار پیدا می‌کنیم." % [camera_delay, camera_answer()]
 		dialogue_next_button.text = "بریم راهروی بازار"
 		dialogue_next_button.pressed.disconnect(show_next_dialogue)
 		dialogue_next_button.pressed.connect(start_corridor)
 	else:
+		lose_score(1)
 		dialogue_name.text = "یه بار دیگه فکر کن"
-		dialogue_text.text = "اشکالی نداره! از ۴:۲۰، اول ۳۰ دقیقه و بعد ۵ دقیقه جلو برو. دوباره امتحان کن."
+		dialogue_text.text = "اشکالی نداره! یک سکه کم شد. دقیقه‌ها را از ۴:۲۰ آرام‌آرام جلو ببر و دوباره امتحان کن."
 		dialogue_next_button.text = "دوباره تلاش کن"
 		dialogue_next_button.pressed.disconnect(show_next_dialogue)
 		dialogue_next_button.pressed.connect(retry_time_question)
@@ -576,9 +720,9 @@ func build_route_panel() -> void:
 	route_panel.anchor_right = 0.5
 	route_panel.anchor_bottom = 0.5
 	route_panel.offset_left = -375
-	route_panel.offset_top = -245
+	route_panel.offset_top = -172
 	route_panel.offset_right = 375
-	route_panel.offset_bottom = 245
+	route_panel.offset_bottom = 172
 	route_panel.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.738), Color(0.88, 0.64, 0.25, 1), 18, 3))
 	add_child(route_panel)
 	var content := VBoxContainer.new()
@@ -627,7 +771,8 @@ func choose_route(is_correct: bool) -> void:
 		route_choices.add_child(next)
 		prompt_label.text = "مسیر درست پیدا شد. قدم بعدی: بررسی انبار و رمز کمد."
 	else:
-		route_text.text = "این مسیر به انبار نمی‌رسد. دوباره به رد کفش و گذرِ باز نگاه کن."
+		lose_score(1)
+		route_text.text = "این مسیر به انبار نمی‌رسد. یک سکه کم شد؛ دوباره به رد کفش و گذرِ باز نگاه کن."
 
 func start_assistant_dialogue() -> void:
 	route_panel.hide()
@@ -768,7 +913,8 @@ func choose_symbol(symbol: int) -> void:
 			prompt_label.text = "کمد باز شد! حالا بسته‌بندی را با نمونه‌ها مقایسه کن."
 			start_packaging_stage()
 		else:
-			lock_status.text = "این ترتیب قفل را باز نکرد. اشکالی ندارد؛ دفتر کارآگاه پایین صفحه را باز کن و کاغذ اعداد را دوباره ببین."
+			lose_score(1)
+			lock_status.text = "این ترتیب قفل را باز نکرد و یک سکه کم شد. اشکالی ندارد؛ دفتر کارآگاه پایین صفحه را باز کن و کاغذ اعداد را دوباره ببین."
 			selected_symbols.clear()
 			update_lock_sequence()
 
@@ -868,9 +1014,10 @@ func choose_packaging(is_correct: bool) -> void:
 	if packaging_solved:
 		return
 	if not is_correct:
+		lose_score(1)
 		for choice in packaging_choices.get_children():
 			choice.queue_free()
-		packaging_question.text = "این یکی جور نیست. می‌خوای دوباره بسته را ببینی؟"
+		packaging_question.text = "این یکی جور نیست و یک سکه کم شد. می‌خوای دوباره بسته را ببینی؟"
 		var review := Button.new()
 		review.text = "دوباره بسته را ببین"
 		review.custom_minimum_size = Vector2(250, 46)
@@ -909,9 +1056,9 @@ func build_case_panel() -> void:
 	case_panel.anchor_right = 0.5
 	case_panel.anchor_bottom = 0.5
 	case_panel.offset_left = -465
-	case_panel.offset_top = -275
+	case_panel.offset_top = -193
 	case_panel.offset_right = 465
-	case_panel.offset_bottom = 275
+	case_panel.offset_bottom = 193
 	case_panel.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.792), Color(0.96, 0.74, 0.31, 1), 18, 3))
 	add_child(case_panel)
 	var content := VBoxContainer.new()
@@ -961,7 +1108,8 @@ func choose_case_answer(answer_index: int) -> void:
 		return
 	var current: Dictionary = CASE_QUESTIONS[case_step]
 	if answer_index != current.correct:
-		case_status.text = "مدرکت کافی نیست؛ دوباره بررسی کن. این نشانه به‌تنهایی چه ارتباطی با بستهٔ داخل کمد دارد؟"
+		lose_score(1)
+		case_status.text = "مدرکت کافی نیست و یک سکه کم شد؛ دوباره بررسی کن. این نشانه به‌تنهایی چه ارتباطی با بستهٔ داخل کمد دارد؟"
 		return
 	case_step += 1
 	if case_step < CASE_QUESTIONS.size():
@@ -974,14 +1122,14 @@ func show_case_ending() -> void:
 	for choice in case_choices.get_children():
 		choice.queue_free()
 	case_title.text = "پرونده حل شد!"
-	case_status.text = "زنجیرهٔ شواهد کامل شد: شاگرد کاغذ را خرید، بستهٔ حاوی قطعه را در کمد گذاشت و ادعای ماندنش در انبار هم درست نبود."
-	case_question.text = "شاگرد می‌گوید: «من برداشتمش. فکر کردم عوض شده و ترسیدم به‌جای یه کار اصل، توی نمایشگاه نشانش بدن.»\n\nاستاد می‌گوید: «پلاک اصل است؛ نشانش توی یک تعمیر قدیمی کم‌رنگ شده. خوب شد نگرانی‌ات را گفتی، ولی نباید یواشکی پنهانش می‌کردی.»"
-	var restart := Button.new()
-	restart.text = "شروع دوبارهٔ پرونده"
-	restart.custom_minimum_size = Vector2(255, 46)
-	restart.add_theme_font_size_override("font_size", 18)
-	restart.pressed.connect(reset_investigation)
-	case_choices.add_child(restart)
+	case_status.text = "پرونده را با %d سکه حل کردی! شاگرد کاغذ را خرید، بستهٔ پلاک را در کمد گذاشت و حرفش دربارهٔ ماندن در انبار هم درست نبود." % score
+	case_question.text = "شاگرد می‌گوید: «من پلاک را برداشتم. فکر کردم عوض شده و ترسیدم به‌جای یه کار اصل، توی نمایشگاه نشانش بدن. می‌خواستم تا وقتی مطمئن می‌شم، جاش امن باشه؛ بعدش هم ترسیدم راستش را بگم.»\n\nاستاد می‌گوید: «پلاک اصل است؛ نشانش توی یک تعمیر قدیمی کم‌رنگ شده. خوب شد نگرانی‌ات را گفتی، ولی باید همان موقع با من حرف می‌زدی، نه اینکه یواشکی پنهانش کنی.»\n\nپلاک دوباره توی جعبه‌اش گذاشته می‌شود و شاگرد هم برای آماده‌کردن نمایشگاه فردا کمک می‌کند."
+	var home := Button.new()
+	home.text = "بازگشت به صفحهٔ اصلی"
+	home.custom_minimum_size = Vector2(255, 46)
+	home.add_theme_font_size_override("font_size", 18)
+	home.pressed.connect(return_to_main_menu)
+	case_choices.add_child(home)
 	prompt_label.text = "پرونده با بررسی شواهد و پذیرفتن مسئولیت حل شد."
 
 func update_lock_sequence() -> void:
@@ -1009,6 +1157,26 @@ func generate_lock_code() -> void:
 			break
 	previous_lock_code = old_code
 	lock_code = new_code
+
+func generate_time_delay() -> void:
+	var random := RandomNumberGenerator.new()
+	random.randomize()
+	camera_delay = random.randi_range(10, 35)
+
+func camera_answer() -> String:
+	return format_clock_time(4 * 60 + 20 + camera_delay)
+
+func format_clock_time(total_minutes: int) -> String:
+	var hours := int(total_minutes / 60)
+	var minutes := total_minutes % 60
+	return to_persian_digits("%d:%02d" % [hours, minutes])
+
+func to_persian_digits(text: String) -> String:
+	var result := text
+	var persian_digits := ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"]
+	for digit in range(10):
+		result = result.replace(str(digit), persian_digits[digit])
+	return result
 
 func format_code(code: Array[int]) -> String:
 	var shown: Array[String] = []

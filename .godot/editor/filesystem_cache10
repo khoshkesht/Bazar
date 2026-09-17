@@ -23,7 +23,7 @@ source-proposal.md::TextFile::-1::1789640448::0::1::::<><><>0<>0<><>::
 ::res://scenes/::1789644413
 main.tscn::PackedScene::-1::1789644413::0::1::::<><><>0<>0<><>::res://scripts/main.gd
 ::res://scripts/::1789644470
-main.gd::GDScript::9039789884927234848::1789647840::0::1::::<>Control<><>0<>0<><>::
+main.gd::GDScript::9039789884927234848::1789649730::0::1::::<>Control<><>0<>0<><>::
 ::res://sources/::1789644203
 ::res://sources/docs/::1789644203
 Scene 01-h.txt::TextFile::-1::1789639006::0::1::::<><><>0<>0<><>::
@@ -34,8 +34,9 @@ Scene 04-v2.txt::TextFile::-1::1789641689::0::1::::<><><>0<>0<><>::
 Scene 04.txt::TextFile::-1::1789639045::0::1::::<><><>0<>0<><>::
 Scene 05.txt::TextFile::-1::1789639056::0::1::::<><><>0<>0<><>::
 Style Bible.txt::TextFile::-1::1789638973::0::1::::<><><>0<>0<><>::
-::res://sources/pics/::1789647889
+::res://sources/pics/::1789651026
 clue_wrapped_package.png::CompressedTexture2D::3435894629865975859::1789647799::1789648088::1::::<><><>0<>0<>788ba5eb477d08f27bb36151ecd44dc5<>res://.godot/imported/clue_wrapped_package.png-c0fe0b2824623905d5371c1e7a974c07.ctex::
+mainpage.png::CompressedTexture2D::9139651680898612030::1789651010::1789651219::1::::<><><>0<>0<>0252d5364a72e17a066d8e2da68e82c3<>res://.godot/imported/mainpage.png-4b53080df22dd5c302cbd46437d20c3f.ctex::
 note.png::CompressedTexture2D::3374306526296101377::1789646522::1789646645::1::::<><><>0<>0<>4f7fa88c0f912acf0192c6e6afae64d0<>res://.godot/imported/note.png-d846fcd0dd5ea44a1e835b648ef72617.ctex::
 oldman.png::CompressedTexture2D::546474495530379221::1789647412::1789647506::1::::<><><>0<>0<>14a57a9e91c4b81e09cd671b8683c6f0<>res://.godot/imported/oldman.png-6a813c63f83e25265ef0290f4d971dbd.ctex::
 s1.png::CompressedTexture2D::5170298343896353219::1789639202::1789643488::1::::<><><>0<>0<>6f81fccb37142284de0f509c633e4c8c<>res://.godot/imported/s1.png-ef3b71f1d787b26c78c468e6fe81777a.ctex::

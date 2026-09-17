@@ -205,11 +205,11 @@ func build_main_stat_label(position_value: Vector2, size_value: Vector2) -> Labe
 	return label
 
 func update_main_menu_stats() -> void:
-	main_case_count_label.text = "%d/۵" % completed_cases
-	main_star_count_label.text = str(average_stars())
-	main_coin_count_label.text = str(earned_coins)
+	main_case_count_label.text = "%s/۵" % to_persian_digits(str(completed_cases))
+	main_star_count_label.text = to_persian_digits(str(average_stars()))
+	main_coin_count_label.text = to_persian_digits(str(earned_coins))
 	main_player_name_label.text = player_name
-	main_bazaar_star_label.text = str(bazaar_stars)
+	main_bazaar_star_label.text = to_persian_digits(str(bazaar_stars))
 
 func average_stars() -> int:
 	if completed_cases == 0:

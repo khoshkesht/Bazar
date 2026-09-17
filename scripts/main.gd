@@ -879,9 +879,9 @@ func build_route_panel() -> void:
 	route_panel.anchor_right = 0.5
 	route_panel.anchor_bottom = 0.5
 	route_panel.offset_left = -375
-	route_panel.offset_top = -172
+	route_panel.offset_top = -155
 	route_panel.offset_right = 375
-	route_panel.offset_bottom = 172
+	route_panel.offset_bottom = 155
 	route_panel.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.738), Color(0.88, 0.64, 0.25, 1), 18, 3))
 	add_child(route_panel)
 	var content := VBoxContainer.new()
@@ -905,9 +905,9 @@ func build_route_panel() -> void:
 	route_choices = VBoxContainer.new()
 	route_choices.add_theme_constant_override("separation", 9)
 	content.add_child(route_choices)
-	add_route_choice("راه اصلیِ شلوغ", false)
-	add_route_choice("گذر خدماتیِ باز", true)
-	add_route_choice("کوچهٔ بن‌بست", false)
+	add_route_choice("بیرون از بازار", false)
+	add_route_choice("راهروی مستقیم انبار", true)
+	add_route_choice("مغازهٔ بغلی", false)
 
 func add_route_choice(text: String, is_correct: bool) -> void:
 	var button := Button.new()
@@ -919,7 +919,7 @@ func add_route_choice(text: String, is_correct: bool) -> void:
 
 func choose_route(is_correct: bool) -> void:
 	if is_correct:
-		route_text.text = "آفرین! گذر خدماتی باز است و رد کفش‌ها هم به همان سمت می‌روند. حالا می‌توانیم راهی انبار شویم."
+		route_text.text = "آفرین! راهروی مستقیم به انبار می‌رسد و رد کفش‌ها هم به همان سمت می‌روند. حالا می‌توانیم راهی انبار شویم."
 		for choice in route_choices.get_children():
 			choice.queue_free()
 		var next := Button.new()
@@ -931,7 +931,7 @@ func choose_route(is_correct: bool) -> void:
 		prompt_label.text = "مسیر درست پیدا شد. قدم بعدی: بررسی انبار و رمز کمد."
 	else:
 		lose_score(1)
-		route_text.text = "این مسیر به انبار نمی‌رسد. یک سکه کم شد؛ دوباره به رد کفش و گذرِ باز نگاه کن."
+		route_text.text = "این مسیر به انبار نمی‌رسد. یک سکه کم شد؛ دوباره به رد کفش‌ها نگاه کن."
 
 func start_assistant_dialogue() -> void:
 	route_panel.hide()
@@ -1099,9 +1099,9 @@ func build_packaging_panel() -> void:
 	packaging_panel.anchor_right = 0.5
 	packaging_panel.anchor_bottom = 0.5
 	packaging_panel.offset_left = -390
-	packaging_panel.offset_top = -220
+	packaging_panel.offset_top = -180
 	packaging_panel.offset_right = 390
-	packaging_panel.offset_bottom = 220
+	packaging_panel.offset_bottom = 180
 	packaging_panel.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.738), Color(0.72, 0.82, 0.68, 1), 18, 3))
 	add_child(packaging_panel)
 	var content := VBoxContainer.new()

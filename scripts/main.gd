@@ -107,6 +107,8 @@ var pulse_time := 0.0
 var camera_delay := 35
 var click_player: AudioStreamPlayer
 var music_player: AudioStreamPlayer
+var music_toggle_button: Button
+var music_enabled := true
 
 const DIALOGUE_LINES := [
 	{"speaker": "استاد قلم‌زن", "text": "آفرین، کارآگاه! حسابی گشتی. من ساعت ۴:۴۵، درست قبل از بیرون رفتنم، پلاک را توی جعبه دیدم."},
@@ -259,6 +261,13 @@ func build_main_menu() -> void:
 	main_avatar.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	main_avatar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	main_menu.add_child(main_avatar)
+	music_toggle_button = Button.new()
+	music_toggle_button.position = Vector2(1210, 664)
+	music_toggle_button.size = Vector2(44, 40)
+	music_toggle_button.add_theme_font_size_override("font_size", 25)
+	music_toggle_button.pressed.connect(toggle_music)
+	main_menu.add_child(music_toggle_button)
+	update_music_toggle_button()
 	var credit_link := LinkButton.new()
 	credit_link.text = "by: m.khoshkesht"
 	credit_link.uri = "mailto:mo.khoshkesht@gmail.com"
@@ -272,6 +281,18 @@ func build_main_menu() -> void:
 	main_menu.add_child(credit_link)
 	update_main_menu_stats()
 	build_name_prompt()
+
+func toggle_music() -> void:
+	music_enabled = not music_enabled
+	if music_player:
+		music_player.stream_paused = not music_enabled
+	update_music_toggle_button()
+
+func update_music_toggle_button() -> void:
+	if not music_toggle_button:
+		return
+	music_toggle_button.text = "♫" if music_enabled else "♪×"
+	music_toggle_button.tooltip_text = "قطع موسیقی" if music_enabled else "پخش موسیقی"
 
 func build_main_stat_label(position_value: Vector2, size_value: Vector2) -> Label:
 	var label := Label.new()

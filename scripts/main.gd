@@ -265,7 +265,7 @@ func build_main_menu() -> void:
 	main_coin_count_label = build_main_stat_label(Vector2(452, 43), Vector2(106, 38))
 	main_star_count_label = build_main_stat_label(Vector2(649, 43), Vector2(72, 38))
 	main_case_count_label = build_main_stat_label(Vector2(823, 43), Vector2(73, 38))
-	main_player_name_label = build_main_stat_label(Vector2(154, 40), Vector2(178, 40))
+	main_player_name_label = build_main_stat_label(Vector2(154, 33), Vector2(178, 40))
 	main_bazaar_star_label = build_main_stat_label(Vector2(172, 476), Vector2(66, 34))
 	main_bazaar_star_label.add_theme_color_override("font_color", Color("2d2015"))
 	main_avatar = TextureRect.new()
@@ -818,7 +818,7 @@ func build_notebook() -> void:
 	var title := Label.new()
 	title.layout_direction = Control.LAYOUT_DIRECTION_LTR
 	title.text = "دفتر کارآگاه"
-	title.position = Vector2(560, 150)
+	title.position = Vector2(600, 150)
 	title.size = Vector2(360, 42)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	title.text_direction = Control.TEXT_DIRECTION_RTL
@@ -828,7 +828,7 @@ func build_notebook() -> void:
 	var intro := Label.new()
 	intro.layout_direction = Control.LAYOUT_DIRECTION_LTR
 	intro.text = "سرنخ‌های پرونده"
-	intro.position = Vector2(580, 195)
+	intro.position = Vector2(620, 195)
 	intro.size = Vector2(360, 30)
 	intro.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	intro.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
@@ -838,7 +838,7 @@ func build_notebook() -> void:
 	notebook.add_child(intro)
 	notebook_clues_text = Label.new()
 	notebook_clues_text.layout_direction = Control.LAYOUT_DIRECTION_LTR
-	notebook_clues_text.position = Vector2(550, 235)
+	notebook_clues_text.position = Vector2(590, 235)
 	notebook_clues_text.size = Vector2(400, 235)
 	notebook_clues_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	notebook_clues_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT

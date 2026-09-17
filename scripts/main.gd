@@ -14,6 +14,7 @@ const BOY_AVATAR := preload("res://sources/pics/boy.png")
 const GIRL_AVATAR := preload("res://sources/pics/girl.png")
 const LOCKED_CASE_LINES := preload("res://sources/pics/locked-case-lines.png")
 const WRAPPED_PACKAGE := preload("res://sources/pics/clue_wrapped_package.png")
+const BACKGROUND_MUSIC := preload("res://sources/bgmusic.mp3")
 const SAVE_PATH := "user://player_progress.json"
 const CLUES := [
 	{"id": "receipt", "title": "رسید کاغذی", "description": "یه رسید تازه کنار پیشخوان افتاده! شاید بگوید چه کسی و چه وقتی خرید کرده.", "position": Vector2(0.36, 0.36), "size": Vector2(0.075, 0.10)},
@@ -104,6 +105,8 @@ var previous_lock_code: Array[int] = []
 var notebook_clues_text: Label
 var pulse_time := 0.0
 var camera_delay := 35
+var click_player: AudioStreamPlayer
+var music_player: AudioStreamPlayer
 
 const DIALOGUE_LINES := [
 	{"speaker": "استاد قلم‌زن", "text": "آفرین، کارآگاه! حسابی گشتی. من ساعت ۴:۴۵، درست قبل از بیرون رفتنم، پلاک را توی جعبه دیدم."},
@@ -139,12 +142,56 @@ const CASE_QUESTIONS := [
 ]
 
 func _ready() -> void:
+	setup_audio()
 	load_player_progress()
 	generate_lock_code()
 	generate_time_delay()
 	build_scene()
 	build_main_menu()
 	show_main_menu()
+
+func setup_audio() -> void:
+	# The click is synthesized at runtime, so it adds no external asset or license.
+	click_player = AudioStreamPlayer.new()
+	click_player.stream = create_click_sound()
+	click_player.volume_db = -18.0
+	add_child(click_player)
+
+	music_player = AudioStreamPlayer.new()
+	var looping_music := BACKGROUND_MUSIC.duplicate() as AudioStreamMP3
+	looping_music.loop = true
+	music_player.stream = looping_music
+	music_player.volume_db = -15.0
+	add_child(music_player)
+	music_player.play()
+
+	get_tree().node_added.connect(register_click_sound)
+
+func create_click_sound() -> AudioStreamWAV:
+	const SAMPLE_RATE := 22050
+	const DURATION_SECONDS := 0.045
+	var frame_count := int(SAMPLE_RATE * DURATION_SECONDS)
+	var samples := PackedByteArray()
+	samples.resize(frame_count * 2)
+	for frame in range(frame_count):
+		var time := float(frame) / float(SAMPLE_RATE)
+		var envelope := pow(1.0 - float(frame) / float(frame_count), 4.0)
+		var waveform := sin(TAU * 1100.0 * time) * 0.72 + sin(TAU * 1760.0 * time) * 0.28
+		samples.encode_s16(frame * 2, roundi(clampf(waveform * envelope * 0.42, -1.0, 1.0) * 32767.0))
+	var stream := AudioStreamWAV.new()
+	stream.format = AudioStreamWAV.FORMAT_16_BITS
+	stream.mix_rate = SAMPLE_RATE
+	stream.stereo = false
+	stream.data = samples
+	return stream
+
+func register_click_sound(node: Node) -> void:
+	if node is BaseButton and not node.pressed.is_connected(play_click_sound):
+		node.pressed.connect(play_click_sound)
+
+func play_click_sound() -> void:
+	if click_player:
+		click_player.play()
 
 func build_scene() -> void:
 	scene_background = TextureRect.new()

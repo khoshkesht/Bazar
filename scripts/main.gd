@@ -541,6 +541,7 @@ func return_to_main_menu() -> void:
 
 func build_header() -> void:
 	scene_header = PanelContainer.new()
+	scene_header.layout_direction = Control.LAYOUT_DIRECTION_LTR
 	scene_header.position = Vector2(28, 22)
 	scene_header.size = Vector2(430, 92)
 	scene_header.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.81), Color(0.88, 0.64, 0.25, 0.85), 16, 2))
@@ -569,6 +570,7 @@ func build_header() -> void:
 	content.add_child(score_label)
 	update_clue_count()
 	home_button = Button.new()
+	home_button.layout_direction = Control.LAYOUT_DIRECTION_LTR
 	home_button.text = "صفحهٔ اصلی"
 	home_button.anchor_left = 1.0
 	home_button.anchor_top = 0.0
@@ -585,22 +587,38 @@ func build_header() -> void:
 func build_hotspots() -> void:
 	for clue in CLUES:
 		var button := Button.new()
+		button.layout_direction = Control.LAYOUT_DIRECTION_LTR
+		# Hotspots use coordinates from the 1280×720 scene reference.  Keeping
+		# them top-level prevents Android RTL layout from transforming both their
+		# drawing position and their hit rectangle.
+		button.top_level = true
 		button.name = "Hotspot_" + clue.id
 		var base_size := Vector2(clue.size.x * 1280.0, clue.size.y * 720.0)
-		button.position = Vector2(clue.position.x * 1280.0, clue.position.y * 720.0) - base_size * 0.2
+		var hotspot_position := Vector2(clue.position.x * 1280.0, clue.position.y * 720.0) - base_size * 0.2
+		button.position = hotspot_position
 		button.size = base_size * 1.4
 		button.tooltip_text = "بررسی: " + clue.title
 		button.flat = true
-		button.text = "●"
-		button.add_theme_font_size_override("font_size", 48)
-		button.add_theme_color_override("font_color", Color("fff238"))
+		# A text glyph for the hotspot can be missing on Android fonts.  Draw a
+		# small marker instead, while retaining the larger invisible tap target.
+		var marker := Panel.new()
+		marker.layout_direction = Control.LAYOUT_DIRECTION_LTR
+		marker.position = button.size * 0.5 - Vector2(12, 12)
+		marker.size = Vector2(24, 24)
+		marker.add_theme_stylebox_override("panel", panel_style(Color("fff238"), Color("fff9a8"), 12, 2))
+		marker.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		button.add_child(marker)
 		button.modulate = Color(1, 0.95, 0.25, 0.8)
 		button.pressed.connect(show_clue.bind(clue, button))
 		add_child(button)
+		# Reparenting a top-level Control on an RTL Android viewport can change its
+		# local position. Set the final canvas position after it has a parent.
+		button.global_position = hotspot_position
 		hotspot_buttons.append(button)
 
 func build_footer() -> void:
 	game_footer = PanelContainer.new()
+	game_footer.layout_direction = Control.LAYOUT_DIRECTION_LTR
 	game_footer.anchor_left = 0.5
 	game_footer.anchor_top = 1.0
 	game_footer.anchor_right = 0.5

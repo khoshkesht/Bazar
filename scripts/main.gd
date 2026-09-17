@@ -44,11 +44,14 @@ var score := 50
 var completed_cases := 0
 var earned_stars := 0
 var earned_coins := 0
+var bazaar_completed := false
+var bazaar_stars := 0
 var player_name := ""
 var main_case_count_label: Label
 var main_star_count_label: Label
 var main_coin_count_label: Label
 var main_player_name_label: Label
+var main_bazaar_star_label: Label
 var name_prompt: PanelContainer
 var name_input: LineEdit
 var name_error: Label
@@ -183,6 +186,8 @@ func build_main_menu() -> void:
 	main_star_count_label = build_main_stat_label(Vector2(649, 43), Vector2(72, 38))
 	main_case_count_label = build_main_stat_label(Vector2(823, 43), Vector2(73, 38))
 	main_player_name_label = build_main_stat_label(Vector2(184, 43), Vector2(148, 10))
+	main_bazaar_star_label = build_main_stat_label(Vector2(172, 476), Vector2(66, 34))
+	main_bazaar_star_label.add_theme_color_override("font_color", Color("2d2015"))
 	update_main_menu_stats()
 	build_name_prompt()
 
@@ -201,9 +206,15 @@ func build_main_stat_label(position_value: Vector2, size_value: Vector2) -> Labe
 
 func update_main_menu_stats() -> void:
 	main_case_count_label.text = "%d/۵" % completed_cases
-	main_star_count_label.text = str(earned_stars)
+	main_star_count_label.text = str(average_stars())
 	main_coin_count_label.text = str(earned_coins)
 	main_player_name_label.text = player_name
+	main_bazaar_star_label.text = str(bazaar_stars)
+
+func average_stars() -> int:
+	if completed_cases == 0:
+		return 0
+	return roundi(float(earned_stars) / float(completed_cases))
 
 func build_name_prompt() -> void:
 	name_prompt = PanelContainer.new()
@@ -286,6 +297,12 @@ func load_player_progress() -> void:
 	completed_cases = clampi(int(data.get("completed_cases", 0)), 0, 5)
 	earned_stars = maxi(0, int(data.get("earned_stars", 0)))
 	earned_coins = maxi(0, int(data.get("earned_coins", 0)))
+	bazaar_completed = bool(data.get("bazaar_completed", completed_cases > 0))
+	bazaar_stars = clampi(int(data.get("bazaar_stars", 0)), 0, 5)
+	if bazaar_completed and bazaar_stars == 0:
+		bazaar_stars = clampi(roundi(float(earned_coins) / 50.0 * 5.0), 1, 5)
+		if completed_cases == 1:
+			earned_stars = bazaar_stars
 
 func save_player_progress() -> void:
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -296,7 +313,9 @@ func save_player_progress() -> void:
 		"player_name": player_name,
 		"completed_cases": completed_cases,
 		"earned_stars": earned_stars,
-		"earned_coins": earned_coins
+		"earned_coins": earned_coins,
+		"bazaar_completed": bazaar_completed,
+		"bazaar_stars": bazaar_stars
 	}
 	file.store_string(JSON.stringify(data))
 
@@ -1278,14 +1297,21 @@ func choose_case_answer(answer_index: int) -> void:
 
 func show_case_ending() -> void:
 	case_completed = true
-	completed_cases = 1
-	earned_stars = 1
-	earned_coins = score
-	save_player_progress()
+	var first_completion := not bazaar_completed
+	if first_completion:
+		bazaar_completed = true
+		bazaar_stars = clampi(roundi(float(score) / 50.0 * 5.0), 1, 5)
+		completed_cases = clampi(completed_cases + 1, 0, 5)
+		earned_stars += bazaar_stars
+		earned_coins += score
+		save_player_progress()
 	for choice in case_choices.get_children():
 		choice.queue_free()
 	case_title.text = "پرونده حل شد!"
-	case_status.text = "پرونده را با %d سکه حل کردی! شاگرد کاغذ را خرید، بستهٔ پلاک را در کمد گذاشت و حرفش دربارهٔ ماندن در انبار هم درست نبود." % score
+	if first_completion:
+		case_status.text = "پرونده را با %d سکه و %d ستاره حل کردی! شاگرد کاغذ را خرید، بستهٔ پلاک را در کمد گذاشت و حرفش دربارهٔ ماندن در انبار هم درست نبود." % [score, bazaar_stars]
+	else:
+		case_status.text = "این پرونده را قبلاً حل کرده‌ای. این بار %d سکه گرفتی، اما سکه و ستارهٔ تازه‌ای به حساب کارآگاهت اضافه نمی‌شود." % score
 	case_question.text = "شاگرد می‌گوید: «من پلاک را برداشتم. فکر کردم عوض شده و ترسیدم به‌جای یه کار اصل، توی نمایشگاه نشانش بدن. می‌خواستم تا وقتی مطمئن می‌شم، جاش امن باشه؛ بعدش هم ترسیدم راستش را بگم.»\n\nاستاد می‌گوید: «پلاک اصل است؛ نشانش توی یک تعمیر قدیمی کم‌رنگ شده. خوب شد نگرانی‌ات را گفتی، ولی باید همان موقع با من حرف می‌زدی، نه اینکه یواشکی پنهانش کنی.»\n\nپلاک دوباره توی جعبه‌اش گذاشته می‌شود و شاگرد هم برای آماده‌کردن نمایشگاه فردا کمک می‌کند."
 	var home := Button.new()
 	home.text = "بازگشت به صفحهٔ اصلی"

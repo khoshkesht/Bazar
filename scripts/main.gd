@@ -58,6 +58,7 @@ var main_player_name_label: Label
 var main_bazaar_star_label: Label
 var main_avatar: TextureRect
 var name_prompt: PanelContainer
+var locked_case_notice: PanelContainer
 var name_input: LineEdit
 var name_error: Label
 var boy_gender_button: Button
@@ -238,6 +239,14 @@ func build_main_menu() -> void:
 		disabled_button.stretch_mode = TextureButton.STRETCH_SCALE
 		disabled_button.disabled = true
 		main_menu.add_child(disabled_button)
+		var locked_case_touch := Button.new()
+		locked_case_touch.layout_direction = Control.LAYOUT_DIRECTION_LTR
+		locked_case_touch.flat = true
+		locked_case_touch.position = Vector2(position_x, 507)
+		locked_case_touch.size = Vector2(210, 72)
+		locked_case_touch.tooltip_text = "این پرونده هنوز توی بازی نیست"
+		locked_case_touch.pressed.connect(show_locked_case_notice)
+		main_menu.add_child(locked_case_touch)
 	var start := TextureButton.new()
 	start.layout_direction = Control.LAYOUT_DIRECTION_LTR
 	# مختصات دکمهٔ آبیِ «شروع پرونده» روی کارت اول در تصویر ۱۶:۹ صفحهٔ اصلی است.
@@ -264,13 +273,13 @@ func build_main_menu() -> void:
 	main_menu.add_child(main_avatar)
 	var system_controls := HBoxContainer.new()
 	system_controls.layout_direction = Control.LAYOUT_DIRECTION_LTR
-	system_controls.position = Vector2(1154, 658)
+	system_controls.position = Vector2(1120, 640)
 	system_controls.add_theme_constant_override("separation", 8)
 	main_menu.add_child(system_controls)
 	music_toggle_button = Button.new()
 	music_toggle_button.layout_direction = Control.LAYOUT_DIRECTION_LTR
-	music_toggle_button.custom_minimum_size = Vector2(48, 46)
-	music_toggle_button.add_theme_font_size_override("font_size", 25)
+	music_toggle_button.custom_minimum_size = Vector2(72, 69)
+	music_toggle_button.add_theme_font_size_override("font_size", 38)
 	music_toggle_button.pressed.connect(toggle_music)
 	system_controls.add_child(music_toggle_button)
 	update_music_toggle_button()
@@ -278,8 +287,8 @@ func build_main_menu() -> void:
 	exit_button.layout_direction = Control.LAYOUT_DIRECTION_LTR
 	exit_button.text = "×"
 	exit_button.tooltip_text = "خروج از بازی"
-	exit_button.custom_minimum_size = Vector2(48, 46)
-	exit_button.add_theme_font_size_override("font_size", 28)
+	exit_button.custom_minimum_size = Vector2(72, 69)
+	exit_button.add_theme_font_size_override("font_size", 42)
 	exit_button.pressed.connect(exit_game)
 	system_controls.add_child(exit_button)
 	var credit_link := LinkButton.new()
@@ -287,15 +296,59 @@ func build_main_menu() -> void:
 	credit_link.text = "by: m.khoshkesht"
 	credit_link.uri = "mailto:mo.khoshkesht@gmail.com"
 	credit_link.tooltip_text = "ارسال ایمیل به mo.khoshkesht@gmail.com"
-	credit_link.position = Vector2(26, 676)
-	credit_link.size = Vector2(240, 28)
+	credit_link.position = Vector2(26, 664)
+	credit_link.size = Vector2(360, 42)
 	credit_link.text_direction = Control.TEXT_DIRECTION_LTR
 	credit_link.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	credit_link.add_theme_font_size_override("font_size", 16)
+	credit_link.add_theme_font_size_override("font_size", 24)
 	credit_link.add_theme_color_override("font_color", Color("ffe09a"))
 	main_menu.add_child(credit_link)
 	update_main_menu_stats()
 	build_name_prompt()
+	build_locked_case_notice()
+
+func build_locked_case_notice() -> void:
+	locked_case_notice = PanelContainer.new()
+	locked_case_notice.layout_direction = Control.LAYOUT_DIRECTION_LTR
+	locked_case_notice.anchor_left = 0.5
+	locked_case_notice.anchor_top = 0.5
+	locked_case_notice.anchor_right = 0.5
+	locked_case_notice.anchor_bottom = 0.5
+	locked_case_notice.offset_left = -250
+	locked_case_notice.offset_top = -105
+	locked_case_notice.offset_right = 250
+	locked_case_notice.offset_bottom = 105
+	locked_case_notice.add_theme_stylebox_override("panel", panel_style(Color(0.10, 0.055, 0.027, 0.92), Color(0.96, 0.74, 0.31, 1), 18, 3))
+	locked_case_notice.hide()
+	main_menu.add_child(locked_case_notice)
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 16)
+	locked_case_notice.add_child(content)
+	var title := Label.new()
+	title.text = "این پرونده هنوز آماده نیست"
+	title.text_direction = Control.TEXT_DIRECTION_RTL
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 30)
+	title.add_theme_color_override("font_color", Color("ffe09a"))
+	content.add_child(title)
+	var message := Label.new()
+	message.text = "این پرونده هنوز توی بازی نیست. بعداً به بازی اضافه می‌شه."
+	message.text_direction = Control.TEXT_DIRECTION_RTL
+	message.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	message.add_theme_font_size_override("font_size", 24)
+	message.add_theme_color_override("font_color", Color("fff6e6"))
+	content.add_child(message)
+	var close := Button.new()
+	close.text = "باشه"
+	close.custom_minimum_size = Vector2(150, 46)
+	close.add_theme_font_size_override("font_size", 24)
+	close.pressed.connect(func() -> void: locked_case_notice.hide())
+	content.add_child(close)
+
+func show_locked_case_notice() -> void:
+	locked_case_notice.show()
+	locked_case_notice.move_to_front()
 
 func toggle_music() -> void:
 	music_enabled = not music_enabled

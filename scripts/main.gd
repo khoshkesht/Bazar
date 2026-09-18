@@ -632,19 +632,19 @@ func build_footer() -> void:
 	prompt_label.text_direction = Control.TEXT_DIRECTION_RTL
 	prompt_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	prompt_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	prompt_label.add_theme_font_size_override("font_size", 19)
+	prompt_label.add_theme_font_size_override("font_size", 24)
 	prompt_label.add_theme_color_override("font_color", Color("fff1d3"))
 	row.add_child(prompt_label)
 	var reset := Button.new()
 	reset.text = "شروع دوباره"
 	reset.custom_minimum_size = Vector2(145, 44)
-	reset.add_theme_font_size_override("font_size", 19)
+	reset.add_theme_font_size_override("font_size", 24)
 	reset.pressed.connect(reset_investigation)
 	row.add_child(reset)
 	notebook_button = Button.new()
 	notebook_button.text = "دفتر کارآگاه"
 	notebook_button.custom_minimum_size = Vector2(155, 44)
-	notebook_button.add_theme_font_size_override("font_size", 19)
+	notebook_button.add_theme_font_size_override("font_size", 24)
 	notebook_button.disabled = true
 	notebook_button.pressed.connect(open_notebook)
 	row.add_child(notebook_button)
@@ -655,9 +655,9 @@ func build_clue_panel() -> void:
 	modal.anchor_top = 0.5
 	modal.anchor_right = 0.5
 	modal.anchor_bottom = 0.5
-	modal.offset_left = -270
+	modal.offset_left = -350
 	modal.offset_top = -155
-	modal.offset_right = 270
+	modal.offset_right = 350
 	modal.offset_bottom = 155
 	modal.visible = false
 	modal.add_theme_stylebox_override("panel", panel_style(Color(0.12, 0.067, 0.032, 0.738), Color(0.96, 0.74, 0.31, 1), 18, 3))
@@ -724,7 +724,7 @@ func show_intro() -> void:
 	intro_active = true
 	modal_title.text = "درخواست استاد قلم‌زن"
 	modal_description.text = "یه پلاک قلم‌زنی‌شدهٔ ارزشمند از جعبهٔ من گم شده و باید فردا برای نمایشگاه آماده باشد. شاگردم امروز نگران نشان کم‌رنگ روی آن بود؛ گفتم بعد از آماده‌سازی با هم نگاهش می‌کنیم. حالا سرنخ‌ها را پیدا کن و ببین چه اتفاقی افتاده."
-	modal_close_button.text = "شروع تحقیق"
+	modal_close_button.text = "پیدا کردن سرنخ"
 	modal.show()
 
 func reset_investigation() -> void:

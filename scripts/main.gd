@@ -15,11 +15,11 @@ const WRAPPED_PACKAGE := preload("res://sources/pics/clue_wrapped_package.png")
 const BACKGROUND_MUSIC := preload("res://sources/bgmusic.mp3")
 const SAVE_PATH := "user://player_progress.json"
 const CLUES := [
-	{"id": "receipt", "title": "رسید کاغذی", "description": "یه رسید تازه کنار پیشخوان افتاده! شاید بگوید چه کسی و چه وقتی خرید کرده.", "position": Vector2(0.36, 0.36), "size": Vector2(0.075, 0.10)},
-	{"id": "thread", "title": "نخ قرمز", "description": "اِ... یه نخ قرمز به پیشخوان گیر کرده. شاید از لباس یا بستهٔ کسی جا مانده باشد.", "position": Vector2(0.45, 0.40), "size": Vector2(0.045, 0.14)},
-	{"id": "clock", "title": "ساعت جیبی", "description": "این ساعت جیبی روی ۴:۲۰ گیر کرده. یعنی آن موقع شاید اتفاق مهمی افتاده!", "position": Vector2(0.115, 0.66), "size": Vector2(0.14, 0.13)},
-	{"id": "footprint", "title": "رد کفش", "description": "این رد کفش تا درِ بازار می‌رود. ببینیم صاحبش کی بوده!", "position": Vector2(0.56, 0.68), "size": Vector2(0.10, 0.12)},
-	{"id": "number_paper", "title": "کاغذ اعداد", "description": "یه کاغذ کوچیک با چهار عدد رویش پیدا کردی: ۲، ۱، ۴، ۳. شاید رمز یک قفل باشد!", "position": Vector2(0.57, 0.35), "size": Vector2(0.10, 0.08)}
+	{"id": "receipt", "title": "رسید خرید", "description": "یه رسید تازه اینجاست! شاید بگه چه کسی و چه وقتی خرید کرده.", "position": Vector2(0.36, 0.36), "size": Vector2(0.075, 0.10)},
+	{"id": "thread", "title": "نخ قرمز", "description": "اوه! یه نخ قرمز به پیشخوان گیر کرده. شاید از لباس یا بستهٔ یکی جا مونده باشه.", "position": Vector2(0.45, 0.40), "size": Vector2(0.045, 0.14)},
+	{"id": "clock", "title": "ساعت جیبی", "description": "ساعت روی ۴:۲۰ مونده. شاید اون موقع یه اتفاقی افتاده!", "position": Vector2(0.115, 0.66), "size": Vector2(0.14, 0.13)},
+	{"id": "footprint", "title": "رد کفش", "description": "رد کفش تا درِ بازار می‌ره. بریم ببینیم به کجا می‌رسه!", "position": Vector2(0.56, 0.68), "size": Vector2(0.10, 0.12)},
+	{"id": "number_paper", "title": "کاغذ اعداد", "description": "یه کاغذ کوچیک با چهار عدد پیدا کردی: ۲، ۱، ۴، ۳. شاید رمز قفل باشه!", "position": Vector2(0.57, 0.35), "size": Vector2(0.10, 0.08)}
 ]
 
 var found_clues: Dictionary = {}
@@ -112,34 +112,34 @@ var exit_button: Button
 const BAZAAR_CASE_BUTTON_RECT := Rect2(67, 507, 230, 72)
 
 const DIALOGUE_LINES := [
-	{"speaker": "استاد قلم‌زن", "text": "آفرین، کارآگاه! حسابی گشتی. من ساعت ۴:۴۵، درست قبل از بیرون رفتنم، پلاک را توی جعبه دیدم."},
-	{"speaker": "کارآگاه", "text": "پس ساعت جیبی می‌گوید پلاک کی گم شده؟"},
-	{"speaker": "استاد قلم‌زن", "text": "نه، آن ساعت صبح افتاد و خراب شد. ولی دوربین بازار کمی بعد از ۴:۲۰، یک نفر را با بقچه دیده."}
+	{"speaker": "استاد قلم‌زن", "text": "آفرین، کارآگاه! خوب گشتی. من ساعت ۴:۴۵، درست قبل از بیرون رفتن، پلاک را توی جعبه دیدم."},
+	{"speaker": "کارآگاه", "text": "پس ساعت جیبی زمان گم‌شدن پلاک را می‌گه؟"},
+	{"speaker": "استاد قلم‌زن", "text": "نه، ساعت صبح افتاد و خراب شد. ولی دوربین بازار کمی بعد از ۴:۲۰، یک نفر را با بقچه دیده."}
 ]
 
 const ASSISTANT_DIALOGUE_LINES := [
 	{"speaker": "شاگرد مغازه", "text": "من از پنج تا پنج‌وربع توی انبار بودم؛ اصلاً هم بیرون نرفتم."},
-	{"speaker": "کارآگاه", "text": "یعنی مطمئنی حتی یک لحظه هم از انبار بیرون نرفتی؟"},
-	{"speaker": "شاگرد مغازه", "text": "آره... فقط به نظرم اگر یه کار اصل نباشه، نباید توی نمایشگاه نشونش بدن، نه؟"},
-	{"speaker": "پیک بازار", "text": "من نزدیک حجره بودم و یه بسته می‌بردم، ولی ساعت ۴:۴۰ رفتم. استاد می‌گه ساعت ۴:۴۵ هنوز پلاک توی جعبه بوده."},
-	{"speaker": "فروشندهٔ کناری", "text": "کاغذ بسته‌بندی را ساعت ۵:۱۰ به خودِ شاگرد فروختم. می‌گفت برای نگه‌داشتن یه چیز ظریف، کاغذ محکم می‌خواد."},
-	{"speaker": "مسئول انبار", "text": "من نزدیک کمد انبار بودم. دیدم شاگرد با همون کاغذ تازه، یه بسته را گذاشت توی کمد. فکر کردم وسیلهٔ نمایشگاهه."}
+	{"speaker": "کارآگاه", "text": "یعنی حتی یک لحظه هم از انبار بیرون نرفتی؟"},
+	{"speaker": "شاگرد مغازه", "text": "آره... فقط فکر می‌کنم اگه یه چیز اصل نباشه، نباید توی نمایشگاه نشونش بدن، نه؟"},
+	{"speaker": "پیک بازار", "text": "من نزدیک مغازه بودم و یه بسته می‌بردم، ولی ساعت ۴:۴۰ رفتم. استاد می‌گه ساعت ۴:۴۵ پلاک هنوز توی جعبه بود."},
+	{"speaker": "فروشندهٔ کناری", "text": "کاغذ بسته‌بندی را ساعت ۵:۱۰ به خودِ شاگرد فروختم. می‌گفت برای یه چیز حساس، کاغذ محکم می‌خواد."},
+	{"speaker": "مسئول انبار", "text": "من نزدیک کمد بودم. دیدم شاگرد با همون کاغذ تازه، یه بسته را گذاشت توی کمد. فکر کردم برای نمایشگاهه."}
 ]
 
 const CASE_QUESTIONS := [
 	{
-		"question": "با کنار هم گذاشتن همهٔ شواهد، مظنون اصلی پرونده کیست؟",
+		"question": "با دیدن همهٔ سرنخ‌ها، فکر می‌کنی چه کسی پلاک را برداشته؟",
 		"choices": ["پیک بازار", "شاگرد مغازه", "فروشندهٔ کناری", "استاد قلم‌زن"],
 		"correct": 1
 	},
 	{
-		"question": "کدام مدرک، شاگرد را به بستهٔ داخل کمد وصل می‌کند؟",
-		"choices": ["نخ قرمز", "رد کفش", "رسید خرید، تطبیق بسته‌بندی و گفتهٔ مسئول انبار", "ساعت شکسته"],
+		"question": "کدام سرنخ نشان می‌دهد شاگرد بسته را توی کمد گذاشته؟",
+		"choices": ["نخ قرمز", "رد کفش", "رسید خرید، جور بودن بسته و حرف مسئول انبار", "ساعت شکسته"],
 		"correct": 2
 	},
 	{
-		"question": "دلیل درست برای نتیجه‌گیری چیست؟",
-		"choices": ["چون نخ قرمز داشت", "چون دروغ گفت", "چون کاغذ را خرید، بستهٔ حاوی قطعه را در کمد گذاشت و ادعایش دربارهٔ انبار درست نبود"],
+		"question": "چرا می‌گوییم شاگرد پلاک را برداشته؟",
+		"choices": ["چون نخ قرمز داشت", "چون دروغ گفت", "چون کاغذ را خرید، بسته را توی کمد گذاشت و حرفش دربارهٔ انبار درست نبود"],
 		"correct": 2
 	}
 ]
@@ -372,7 +372,7 @@ func build_name_prompt() -> void:
 	title.add_theme_color_override("font_color", Color("ffe09a"))
 	content.add_child(title)
 	var description := Label.new()
-	description.text = "اسمت را بنویس تا روی کارت کارآگاهت نشان بدهیم."
+	description.text = "اسمت را بنویس تا روی کارت کارآگاهت بنویسیم."
 	description.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	description.text_direction = Control.TEXT_DIRECTION_RTL
 	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -389,7 +389,7 @@ func build_name_prompt() -> void:
 	name_input.text_submitted.connect(save_player_name)
 	content.add_child(name_input)
 	var gender_title := Label.new()
-	gender_title.text = "آواتار کارآگاهت را انتخاب کن:"
+	gender_title.text = "کارآگاهت را انتخاب کن:"
 	gender_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	gender_title.text_direction = Control.TEXT_DIRECTION_RTL
 	gender_title.add_theme_font_size_override("font_size", 22)
@@ -401,12 +401,12 @@ func build_name_prompt() -> void:
 	content.add_child(gender_choices)
 	boy_gender_button = Button.new()
 	boy_gender_button.custom_minimum_size = Vector2(145, 42)
-	boy_gender_button.add_theme_font_size_override("font_size", 22)
+	boy_gender_button.add_theme_font_size_override("font_size", 27)
 	boy_gender_button.pressed.connect(select_player_gender.bind("boy"))
 	gender_choices.add_child(boy_gender_button)
 	girl_gender_button = Button.new()
 	girl_gender_button.custom_minimum_size = Vector2(145, 42)
-	girl_gender_button.add_theme_font_size_override("font_size", 22)
+	girl_gender_button.add_theme_font_size_override("font_size", 27)
 	girl_gender_button.pressed.connect(select_player_gender.bind("girl"))
 	gender_choices.add_child(girl_gender_button)
 	refresh_gender_buttons()
@@ -628,7 +628,7 @@ func build_footer() -> void:
 	row.add_theme_constant_override("separation", 18)
 	game_footer.add_child(row)
 	prompt_label = Label.new()
-	prompt_label.text = "دنبال نقطه‌های طلایی بگرد و روشون بزن!"
+	prompt_label.text = "نقطه‌های طلایی را پیدا کن و بزن روشون!"
 	prompt_label.text_direction = Control.TEXT_DIRECTION_RTL
 	prompt_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	prompt_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -697,15 +697,15 @@ func show_clue(clue: Dictionary, button: Button) -> void:
 	button.tooltip_text = "بررسی شد: " + clue.title
 	modal_title.text = clue.title
 	if clue.id == "number_paper":
-		modal_description.text = "یه کاغذ کوچیک با چهار عدد رویش پیدا کردی: %s. شاید رمز یک قفل باشد!" % format_code(lock_code)
+		modal_description.text = "یه کاغذ کوچیک با این چهار عدد پیدا کردی: %s. شاید رمز قفل باشه!" % format_code(lock_code)
 	else:
 		modal_description.text = clue.description
 	modal.show()
 	update_clue_count()
 	if first_discovery:
-		prompt_label.text = "آفرین! یه سرنخ پیدا کردی. بقیه‌شون رو هم پیدا کن."
+		prompt_label.text = "آفرین! یه سرنخ پیدا کردی. بقیه را هم پیدا کن."
 	if found_clues.size() == CLUES.size():
-		prompt_label.text = "آفرین! هر پنج سرنخ را پیدا کردی. حالا بیا دفتر کارآگاه را ببینیم."
+		prompt_label.text = "آفرین! هر پنج سرنخ را پیدا کردی. حالا دفتر کارآگاه را ببینیم."
 		modal_close_button.text = "باز کردن دفتر کارآگاه"
 		notebook_button.disabled = false
 
@@ -714,7 +714,7 @@ func close_clue_panel() -> void:
 		intro_active = false
 		modal.hide()
 		modal_close_button.text = "ادامهٔ جست‌وجو"
-		prompt_label.text = "پنج سرنخ را پیدا کن تا بفهمیم چه کسی قطعه را برداشته است."
+		prompt_label.text = "پنج سرنخ را پیدا کن تا بفهمیم چه کسی پلاک را برداشته."
 		return
 	modal.hide()
 	if found_clues.size() == CLUES.size():
@@ -723,7 +723,7 @@ func close_clue_panel() -> void:
 func show_intro() -> void:
 	intro_active = true
 	modal_title.text = "درخواست استاد قلم‌زن"
-	modal_description.text = "یه پلاک قلم‌زنی‌شدهٔ ارزشمند از جعبهٔ من گم شده و باید فردا برای نمایشگاه آماده باشد. شاگردم امروز نگران نشان کم‌رنگ روی آن بود؛ گفتم بعد از آماده‌سازی با هم نگاهش می‌کنیم. حالا سرنخ‌ها را پیدا کن و ببین چه اتفاقی افتاده."
+	modal_description.text = "یه پلاک مهم از جعبهٔ من گم شده. باید فردا برای نمایشگاه آماده باشه. شاگردم فکر می‌کرد نشان روی پلاک کم‌رنگ شده. گفتم بعداً با هم نگاهش می‌کنیم. حالا سرنخ‌ها را پیدا کن تا بفهمیم چی شده."
 	modal_close_button.text = "پیدا کردن سرنخ"
 	modal.show()
 
@@ -908,7 +908,7 @@ func show_notebook_score_confirmation() -> void:
 		title.add_theme_color_override("font_color", Color("ffe09a"))
 		content.add_child(title)
 		var message := Label.new()
-		message.text = "دیدن ترتیب رمز در دفترچه، ۵ سکه از امتیازت کم می‌کند. می‌خواهی دفترچه را باز کنی؟"
+		message.text = "اگر ترتیب رمز را در دفتر ببینی، ۵ سکه از امتیازت کم می‌شه. می‌خوای دفتر را باز کنی؟"
 		message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		message.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		message.text_direction = Control.TEXT_DIRECTION_RTL
@@ -926,7 +926,7 @@ func show_notebook_score_confirmation() -> void:
 		cancel.pressed.connect(func() -> void: score_confirmation.hide())
 		buttons.add_child(cancel)
 		var confirm := Button.new()
-		confirm.text = "بله، ۵ سکه کم شود"
+		confirm.text = "آره، ۵ سکه کم بشه"
 		confirm.custom_minimum_size = Vector2(205, 46)
 		confirm.add_theme_font_size_override("font_size", 19)
 		confirm.pressed.connect(confirm_notebook_score_cost)
@@ -937,7 +937,7 @@ func show_notebook_score_confirmation() -> void:
 func confirm_notebook_score_cost() -> void:
 	score_confirmation.hide()
 	lose_score(5)
-	prompt_label.text = "۵ سکه برای دیدن دفترچه کم شد."
+	prompt_label.text = "برای دیدن دفتر، ۵ سکه کم شد."
 	open_notebook_screen()
 
 func close_notebook() -> void:
@@ -1011,7 +1011,7 @@ func show_dialogue_line() -> void:
 	var line: Dictionary = DIALOGUE_LINES[dialogue_step]
 	dialogue_name.text = line.speaker
 	if dialogue_step == DIALOGUE_LINES.size() - 1:
-		dialogue_text.text = "نه، آن ساعت صبح افتاد و خراب شد. ولی دوربین بازار %d دقیقه بعد از ۴:۲۰، یک نفر را با بقچه دیده." % camera_delay
+		dialogue_text.text = "نه، ساعت صبح افتاد و خراب شد. ولی دوربین بازار %d دقیقه بعد از ۴:۲۰، یک نفر را با بقچه دیده." % camera_delay
 	else:
 		dialogue_text.text = line.text
 	if dialogue_step == DIALOGUE_LINES.size() - 1:
@@ -1033,7 +1033,7 @@ func show_time_question() -> void:
 		time_answers = null
 	if time_puzzle_solved:
 		dialogue_name.text = "معمای زمان حل شده"
-		dialogue_text.text = "آفرین! جواب %s را قبلاً پیدا کردی. حالا می‌توانیم راهی راهروی بازار شویم." % camera_answer()
+		dialogue_text.text = "آفرین! جواب %s بود. حالا بریم راهروی بازار." % camera_answer()
 		dialogue_next_button.show()
 		dialogue_next_button.text = "بریم راهروی بازار"
 		if dialogue_next_button.pressed.is_connected(show_next_dialogue):
@@ -1042,7 +1042,7 @@ func show_time_question() -> void:
 			dialogue_next_button.pressed.connect(start_corridor)
 		return
 	dialogue_name.text = "معمای زمان"
-	dialogue_text.text = "دوربین %d دقیقه بعد از ساعت ۴:۲۰، فردی با بقچه را دیده. ساعت دوربین چند بوده؟" % camera_delay
+	dialogue_text.text = "دوربین %d دقیقه بعد از ساعت ۴:۲۰، یک نفر را با بقچه دیده. ساعت چند بوده؟" % camera_delay
 	dialogue_next_button.hide()
 	time_answers = HBoxContainer.new()
 	time_answers.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -1055,7 +1055,7 @@ func show_time_question() -> void:
 		var button := Button.new()
 		button.text = answer
 		button.custom_minimum_size = Vector2(125, 46)
-		button.add_theme_font_size_override("font_size", 22)
+		button.add_theme_font_size_override("font_size", 27)
 		button.pressed.connect(answer_time_question.bind(answer))
 		time_answers.add_child(button)
 
@@ -1072,14 +1072,14 @@ func answer_time_question(answer: String) -> void:
 	if answer == camera_answer():
 		time_puzzle_solved = true
 		dialogue_name.text = "آفرین!"
-		dialogue_text.text = "درست گفتی: ۴:۲۰ + %d دقیقه می‌شود %s. حالا مسیر فردِ بقچه‌به‌دست را در راهروی بازار پیدا می‌کنیم." % [camera_delay, camera_answer()]
+		dialogue_text.text = "درست گفتی: ۴:۲۰ با %d دقیقه می‌شه %s. حالا بریم مسیر این آدم را پیدا کنیم." % [camera_delay, camera_answer()]
 		dialogue_next_button.text = "بریم راهروی بازار"
 		dialogue_next_button.pressed.disconnect(show_next_dialogue)
 		dialogue_next_button.pressed.connect(start_corridor)
 	else:
 		lose_score(1)
 		dialogue_name.text = "یه بار دیگه فکر کن"
-		dialogue_text.text = "اشکالی نداره! یک سکه کم شد. دقیقه‌ها را از ۴:۲۰ آرام‌آرام جلو ببر و دوباره امتحان کن."
+		dialogue_text.text = "اشکالی نداره! یک سکه کم شد. از ۴:۲۰ دقیقه‌ها را جلو ببر و دوباره امتحان کن."
 		dialogue_next_button.text = "دوباره تلاش کن"
 		dialogue_next_button.pressed.disconnect(show_next_dialogue)
 		dialogue_next_button.pressed.connect(retry_time_question)
@@ -1091,7 +1091,7 @@ func retry_time_question() -> void:
 
 func close_dialogue() -> void:
 	dialogue.hide()
-	prompt_label.text = "مسیر بازار باز شد! در قدم بعد راهرو و نقشهٔ مسیر را می‌سازیم."
+	prompt_label.text = "راه بازار باز شد! حالا بریم راهرو و مسیر را پیدا کنیم."
 
 func start_corridor() -> void:
 	dialogue.hide()
@@ -1099,7 +1099,7 @@ func start_corridor() -> void:
 	for hotspot in hotspot_buttons:
 		hotspot.hide()
 	notebook_button.disabled = false
-	prompt_label.text = "راهروی بازار: رد کفش را دنبال کن و مسیر درست را انتخاب کن."
+	prompt_label.text = "رد کفش را دنبال کن و راه درست را انتخاب کن."
 	build_route_panel()
 	route_panel.show()
 
@@ -1128,7 +1128,7 @@ func build_route_panel() -> void:
 	title.add_theme_color_override("font_color", Color("ffe09a"))
 	content.add_child(title)
 	route_text = Label.new()
-	route_text.text = "رد کفش‌ها و نخ قرمز به یک گذر باز می‌رسند. از کدام مسیر باید برویم تا به انبار برسیم؟"
+	route_text.text = "رد کفش‌ها و نخ قرمز به یک راه باز می‌رسند. از کدوم راه بریم تا به انبار برسیم؟"
 	route_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	route_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	route_text.text_direction = Control.TEXT_DIRECTION_RTL
@@ -1138,7 +1138,7 @@ func build_route_panel() -> void:
 	route_choices = VBoxContainer.new()
 	route_choices.add_theme_constant_override("separation", 9)
 	content.add_child(route_choices)
-	add_route_choice("بیرون از بازار", false)
+	add_route_choice("رد پا نمی‌بینم", false)
 	add_route_choice("راهروی مستقیم انبار", true)
 	add_route_choice("مغازهٔ بغلی", false)
 
@@ -1146,30 +1146,30 @@ func add_route_choice(text: String, is_correct: bool) -> void:
 	var button := Button.new()
 	button.text = text
 	button.custom_minimum_size = Vector2(300, 43)
-	button.add_theme_font_size_override("font_size", 22)
+	button.add_theme_font_size_override("font_size", 27)
 	button.pressed.connect(choose_route.bind(is_correct))
 	route_choices.add_child(button)
 
 func choose_route(is_correct: bool) -> void:
 	if is_correct:
-		route_text.text = "آفرین! راهروی مستقیم به انبار می‌رسد و رد کفش‌ها هم به همان سمت می‌روند. حالا می‌توانیم راهی انبار شویم."
+		route_text.text = "آفرین! راه مستقیم به انبار می‌رسه و رد کفش‌ها هم همون طرف می‌رن. بریم انبار!"
 		for choice in route_choices.get_children():
 			choice.queue_free()
 		var next := Button.new()
-		next.text = "با افراد مرتبط گفت‌وگو کنیم"
+		next.text = "با آدم‌ها حرف بزنیم"
 		next.custom_minimum_size = Vector2(290, 46)
 		next.add_theme_font_size_override("font_size", 22)
 		next.pressed.connect(start_assistant_dialogue)
 		route_choices.add_child(next)
-		prompt_label.text = "مسیر درست پیدا شد. قدم بعدی: بررسی انبار و رمز کمد."
+		prompt_label.text = "راه درست را پیدا کردی. حالا انبار و رمز کمد."
 	else:
 		lose_score(1)
-		route_text.text = "این مسیر به انبار نمی‌رسد. یک سکه کم شد؛ دوباره به رد کفش‌ها نگاه کن."
+		route_text.text = "این راه به انبار نمی‌رسه. یک سکه کم شد؛ دوباره به رد کفش‌ها نگاه کن."
 
 func start_assistant_dialogue() -> void:
 	route_panel.hide()
 	scene_background.texture = ASSISTANT_DIALOGUE_BACKGROUND
-	prompt_label.text = "با افراد مرتبط حرف بزن و گفته‌هایشان را با سرنخ‌ها مقایسه کن."
+	prompt_label.text = "با آدم‌ها حرف بزن و حرف‌هایشان را با سرنخ‌ها بسنج."
 	build_assistant_dialogue()
 	assistant_dialogue_step = 0
 	assistant_panel.show()
@@ -1232,7 +1232,7 @@ func show_next_assistant_line() -> void:
 func start_warehouse() -> void:
 	route_panel.hide()
 	scene_background.texture = WAREHOUSE_BACKGROUND
-	prompt_label.text = "انبار: کمد قفل است. ترتیب نشانه‌ها را از کاغذ اعداد یادآوری کن."
+	prompt_label.text = "کمد انبار قفله. ترتیب نشانه‌ها را از روی کاغذ اعداد یادت بیار."
 	build_lock_panel()
 	lock_panel.show()
 
@@ -1261,7 +1261,7 @@ func build_lock_panel() -> void:
 	title.add_theme_color_override("font_color", Color("ffe09a"))
 	content.add_child(title)
 	lock_status = Label.new()
-	lock_status.text = "ترتیب یادت نیست؟ دکمهٔ «دفتر کارآگاه» پایین صفحه را بزن و کاغذ اعداد را ببین."
+	lock_status.text = "کمد پشت سرمون یه رمز داره. رمز یادت هست؟ اگر نیست دکمهٔ «دفتر کارآگاه» پایین صفحه را بزن و کاغذ اعداد را ببین."
 	lock_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	lock_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	lock_status.text_direction = Control.TEXT_DIRECTION_RTL
@@ -1283,7 +1283,7 @@ func build_lock_panel() -> void:
 		var button := Button.new()
 		button.text = "نشانهٔ " + ["", "۱", "۲", "۳", "۴"][symbol]
 		button.custom_minimum_size = Vector2(135, 52)
-		button.add_theme_font_size_override("font_size", 19)
+		button.add_theme_font_size_override("font_size", 24)
 		button.pressed.connect(choose_symbol.bind(symbol))
 		symbols.add_child(button)
 	var clear := Button.new()
@@ -1301,12 +1301,12 @@ func choose_symbol(symbol: int) -> void:
 	if selected_symbols.size() == 4:
 		if selected_symbols == lock_code:
 			cabinet_unlocked = true
-			lock_status.text = "آفرین! صدای باز شدن قفل آمد. داخل کمد یک بسته با کاغذ تازه پیدا کردی."
+			lock_status.text = "آفرین! قفل باز شد. توی کمد یک بسته با کاغذ تازه پیدا کردی."
 			prompt_label.text = "کمد باز شد! حالا بسته‌بندی را با نمونه‌ها مقایسه کن."
 			start_packaging_stage()
 		else:
 			lose_score(1)
-			lock_status.text = "این ترتیب قفل را باز نکرد و یک سکه کم شد. اشکالی ندارد؛ دفتر کارآگاه پایین صفحه را باز کن و کاغذ اعداد را دوباره ببین."
+			lock_status.text = "این ترتیب قفل را باز نکرد و یک سکه کم شد. اشکالی نداره؛ دفتر کارآگاه را باز کن و کاغذ اعداد را دوباره ببین."
 			selected_symbols.clear()
 			update_lock_sequence()
 
@@ -1314,7 +1314,7 @@ func clear_lock_sequence() -> void:
 	if cabinet_unlocked:
 		return
 	selected_symbols.clear()
-	lock_status.text = "ترتیب پاک شد. اگر لازم داری، دفتر کارآگاه پایین صفحه را باز کن و کاغذ اعداد را ببین."
+	lock_status.text = "ترتیب پاک شد. اگر لازم داری، دفتر کارآگاه را باز کن و کاغذ اعداد را ببین."
 	update_lock_sequence()
 
 func start_packaging_stage() -> void:
@@ -1387,7 +1387,7 @@ func show_packaging_question() -> void:
 	for choice in packaging_choices.get_children():
 		choice.queue_free()
 	packaging_title.text = "تطبیق بسته‌بندی"
-	packaging_question.text = "کدام نمونه با این بسته جور درمی‌آید؟"
+	packaging_question.text = "کدوم نمونه با این بسته جور درمیاد؟"
 	packaging_question.show()
 	packaging_preview.hide()
 	add_packaging_choice("کاغذ سادهٔ کرم", false)
@@ -1398,7 +1398,7 @@ func add_packaging_choice(text: String, is_correct: bool) -> void:
 	var button := Button.new()
 	button.text = text
 	button.custom_minimum_size = Vector2(350, 43)
-	button.add_theme_font_size_override("font_size", 22)
+	button.add_theme_font_size_override("font_size", 27)
 	button.pressed.connect(choose_packaging.bind(is_correct))
 	packaging_choices.add_child(button)
 
@@ -1427,12 +1427,12 @@ func choose_packaging(is_correct: bool) -> void:
 	next.add_theme_font_size_override("font_size", 22)
 	next.pressed.connect(start_case_review)
 	packaging_choices.add_child(next)
-	prompt_label.text = "بسته‌بندی هم بررسی شد. قدم بعدی: مرور همهٔ مدرک‌ها و نتیجه‌گیری."
+	prompt_label.text = "بسته را هم بررسی کردی. حالا همهٔ سرنخ‌ها را ببین و جواب بده."
 
 func start_case_review() -> void:
 	packaging_panel.hide()
 	scene_background.texture = CASE_REVIEW_BACKGROUND
-	prompt_label.text = "میز نتیجه‌گیری: شواهد را با دقت کنار هم بگذار."
+	prompt_label.text = "حالا سرنخ‌ها را کنار هم بگذار و جواب پرونده را پیدا کن."
 	build_case_panel()
 	case_step = 0
 	case_completed = false
@@ -1484,14 +1484,14 @@ func show_case_question() -> void:
 	for choice in case_choices.get_children():
 		choice.queue_free()
 	var current: Dictionary = CASE_QUESTIONS[case_step]
-	case_title.text = "تشکیل پرونده  •  گام %d از %d" % [case_step + 1, CASE_QUESTIONS.size()]
-	case_status.text = "رسیدِ خرید، تطبیق بسته‌بندی، گفتهٔ مسئول انبار و قطعهٔ بازیابی‌شده را با هم مرور کن."
+	case_title.text = "جواب پرونده  •  پرسش %d از %d" % [case_step + 1, CASE_QUESTIONS.size()]
+	case_status.text = "رسید خرید، بسته، حرف مسئول انبار و پلاک پیدا‌شده را با هم ببین."
 	case_question.text = current.question
 	for index in range(current.choices.size()):
 		var button := Button.new()
 		button.text = current.choices[index]
 		button.custom_minimum_size = Vector2(540, 42)
-		button.add_theme_font_size_override("font_size", 19)
+		button.add_theme_font_size_override("font_size", 24)
 		button.pressed.connect(choose_case_answer.bind(index))
 		case_choices.add_child(button)
 
@@ -1501,7 +1501,7 @@ func choose_case_answer(answer_index: int) -> void:
 	var current: Dictionary = CASE_QUESTIONS[case_step]
 	if answer_index != current.correct:
 		lose_score(1)
-		case_status.text = "مدرکت کافی نیست و یک سکه کم شد؛ دوباره بررسی کن. این نشانه به‌تنهایی چه ارتباطی با بستهٔ داخل کمد دارد؟"
+		case_status.text = "هنوز سرنخ کافی نداری و یک سکه کم شد. دوباره نگاه کن: این نشانه چه ربطی به بستهٔ توی کمد داره؟"
 		return
 	case_step += 1
 	if case_step < CASE_QUESTIONS.size():
@@ -1523,17 +1523,17 @@ func show_case_ending() -> void:
 		choice.queue_free()
 	case_title.text = "پرونده حل شد!"
 	if first_completion:
-		case_status.text = "پرونده را با %d سکه و %d ستاره حل کردی! شاگرد کاغذ را خرید، بستهٔ پلاک را در کمد گذاشت و حرفش دربارهٔ ماندن در انبار هم درست نبود." % [score, bazaar_stars]
+		case_status.text = "پرونده را با %d سکه و %d ستاره حل کردی! شاگرد کاغذ را خرید، بستهٔ پلاک را توی کمد گذاشت و حرفش دربارهٔ انبار هم درست نبود." % [score, bazaar_stars]
 	else:
-		case_status.text = "این پرونده را قبلاً حل کرده‌ای. این بار %d سکه گرفتی، اما سکه و ستارهٔ تازه‌ای به حساب کارآگاهت اضافه نمی‌شود." % score
-	case_question.text = "شاگرد می‌گوید: «من پلاک را برداشتم. فکر کردم عوض شده و ترسیدم به‌جای یه کار اصل، توی نمایشگاه نشانش بدن. می‌خواستم تا وقتی مطمئن می‌شم، جاش امن باشه؛ بعدش هم ترسیدم راستش را بگم.»\n\nاستاد می‌گوید: «پلاک اصل است؛ نشانش توی یک تعمیر قدیمی کم‌رنگ شده. خوب شد نگرانی‌ات را گفتی، ولی باید همان موقع با من حرف می‌زدی، نه اینکه یواشکی پنهانش کنی.»\n\nپلاک دوباره توی جعبه‌اش گذاشته می‌شود و شاگرد هم برای آماده‌کردن نمایشگاه فردا کمک می‌کند."
+		case_status.text = "این پرونده را قبلاً حل کردی. این بار %d سکه گرفتی، ولی سکه و ستارهٔ تازه‌ای نمی‌گیری." % score
+	case_question.text = "شاگرد می‌گوید: «من پلاک را برداشتم. فکر کردم شاید عوض شده. می‌ترسیدم یه چیز تقلبی را توی نمایشگاه نشون بدیم. می‌خواستم تا وقتی مطمئن می‌شم، جاش امن باشه؛ بعدش هم ترسیدم راستش را بگم.»\n\nاستاد می‌گوید: «پلاک اصله. نشانش توی یک تعمیر قدیمی کم‌رنگ شده. خوب شد نگرانی‌ات را گفتی، ولی باید همون موقع با من حرف می‌زدی؛ نباید یواشکی پنهانش می‌کردی.»\n\nپلاک دوباره توی جعبه گذاشته می‌شه و شاگرد هم برای نمایشگاه فردا کمک می‌کنه."
 	var home := Button.new()
 	home.text = "بازگشت به صفحهٔ اصلی"
 	home.custom_minimum_size = Vector2(255, 46)
 	home.add_theme_font_size_override("font_size", 22)
 	home.pressed.connect(return_to_main_menu)
 	case_choices.add_child(home)
-	prompt_label.text = "پرونده با بررسی شواهد و پذیرفتن مسئولیت حل شد."
+	prompt_label.text = "پرونده حل شد! با دیدن سرنخ‌ها، جواب درست را پیدا کردی."
 
 func update_lock_sequence() -> void:
 	if selected_symbols.is_empty():
@@ -1598,7 +1598,7 @@ func format_code(code: Array[int]) -> String:
 
 func update_notebook_code_text() -> void:
 	if notebook_clues_text:
-		notebook_clues_text.text = "• ساعت روی ۴:۲۰ مانده، اما خراب است\n• رسید کاغذی، نخ قرمز، رد کفش و کاغذ اعداد\n• ترتیب روی کاغذ: %s\n\nسرنخ ها رو حفظ کن." % format_code(lock_code)
+		notebook_clues_text.text = "• ساعت روی ۴:۲۰ مونده، ولی خرابه\n• رسید خرید، نخ قرمز، رد کفش و کاغذ اعداد\n• ترتیب روی کاغذ: %s\n\nاین سرنخ‌ها را یادت نگه دار." % format_code(lock_code)
 
 func panel_style(background: Color, border: Color, radius: float, width: float) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()

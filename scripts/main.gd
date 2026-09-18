@@ -8,7 +8,6 @@ const WAREHOUSE_BACKGROUND := preload("res://sources/pics/s4.png")
 const NOTEBOOK_BACKGROUND := preload("res://sources/pics/note.png")
 const CASE_REVIEW_BACKGROUND := preload("res://sources/pics/s5.png")
 const MAINPAGE_BACKGROUND := preload("res://sources/pics/mainpage.png")
-const DISABLED_CASE_BUTTON := preload("res://sources/pics/bt-disable.png")
 const BOY_AVATAR := preload("res://sources/pics/boy.png")
 const GIRL_AVATAR := preload("res://sources/pics/girl.png")
 const WRAPPED_PACKAGE := preload("res://sources/pics/clue_wrapped_package.png")
@@ -110,7 +109,16 @@ var music_toggle_button: Button
 var music_enabled := true
 var exit_button: Button
 
-const BAZAAR_CASE_BUTTON_RECT := Rect2(67, 507, 230, 72)
+# The menu artwork contains all visual buttons. These rectangles are only the
+# transparent touch targets aligned to that 1280×720 artwork.
+const BAZAAR_CASE_BUTTON_RECT := Rect2(76, 503, 209, 51)
+const LOCKED_CASE_BUTTON_RECTS := [
+	Rect2(318, 503, 192, 60),
+	Rect2(543, 503, 193, 60),
+	Rect2(768, 503, 207, 60),
+	Rect2(1009, 503, 193, 60)
+]
+const MAIN_PROFILE_BUTTON_RECT := Rect2(782, 615, 155, 82)
 
 const DIALOGUE_LINES := [
 	{"speaker": "استاد قلم‌زن", "text": "آفرین، کارآگاه! خوب گشتی. من ساعت ۴:۴۵، درست قبل از بیرون رفتن، پلاک را توی جعبه دیدم."},
@@ -229,78 +237,71 @@ func build_main_menu() -> void:
 	main_menu.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	main_menu.mouse_filter = Control.MOUSE_FILTER_PASS
 	add_child(main_menu)
-	for position_x in [310, 535, 768, 1001]:
-		var disabled_button := TextureButton.new()
-		disabled_button.layout_direction = Control.LAYOUT_DIRECTION_LTR
-		disabled_button.texture_disabled = DISABLED_CASE_BUTTON
-		disabled_button.position = Vector2(position_x, 507)
-		disabled_button.size = Vector2(210, 72)
-		disabled_button.ignore_texture_size = true
-		disabled_button.stretch_mode = TextureButton.STRETCH_SCALE
-		disabled_button.disabled = true
-		main_menu.add_child(disabled_button)
+	for button_rect in LOCKED_CASE_BUTTON_RECTS:
 		var locked_case_touch := Button.new()
 		locked_case_touch.layout_direction = Control.LAYOUT_DIRECTION_LTR
 		locked_case_touch.flat = true
-		locked_case_touch.position = Vector2(position_x, 507)
-		locked_case_touch.size = Vector2(210, 72)
+		locked_case_touch.position = button_rect.position
+		locked_case_touch.size = button_rect.size
 		locked_case_touch.tooltip_text = "این پرونده هنوز توی بازی نیست"
 		locked_case_touch.pressed.connect(show_locked_case_notice)
 		main_menu.add_child(locked_case_touch)
-	var start := TextureButton.new()
+	var start := Button.new()
 	start.layout_direction = Control.LAYOUT_DIRECTION_LTR
-	# مختصات دکمهٔ آبیِ «شروع پرونده» روی کارت اول در تصویر ۱۶:۹ صفحهٔ اصلی است.
-	start.position = Vector2(67, 507)
-	start.size = Vector2(230, 72)
-	start.ignore_texture_size = true
-	start.stretch_mode = TextureButton.STRETCH_SCALE
+	start.flat = true
+	start.position = BAZAAR_CASE_BUTTON_RECT.position
+	start.size = BAZAAR_CASE_BUTTON_RECT.size
 	start.tooltip_text = "شروع راز بازار بزرگ"
 	start.pressed.connect(begin_bazaar_case)
 	main_menu.add_child(start)
 	main_coin_count_label = build_main_stat_label(Vector2(452, 43), Vector2(106, 38))
 	main_star_count_label = build_main_stat_label(Vector2(649, 43), Vector2(72, 38))
 	main_case_count_label = build_main_stat_label(Vector2(823, 43), Vector2(73, 38))
-	main_player_name_label = build_main_stat_label(Vector2(154, 33), Vector2(178, 40))
-	main_bazaar_star_label = build_main_stat_label(Vector2(172, 476), Vector2(66, 34))
+	main_player_name_label = build_main_stat_label(Vector2(115, 36), Vector2(130, 38))
+	main_bazaar_star_label = build_main_stat_label(Vector2(185, 456), Vector2(66, 34))
 	main_bazaar_star_label.add_theme_color_override("font_color", Color("2d2015"))
 	main_avatar = TextureRect.new()
 	main_avatar.layout_direction = Control.LAYOUT_DIRECTION_LTR
-	main_avatar.position = Vector2(63, 18)
-	main_avatar.size = Vector2(86, 86)
+	main_avatar.position = Vector2(35, 28)
+	main_avatar.size = Vector2(60, 60)
 	main_avatar.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	main_avatar.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	main_avatar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	main_menu.add_child(main_avatar)
-	var system_controls := HBoxContainer.new()
-	system_controls.layout_direction = Control.LAYOUT_DIRECTION_LTR
-	system_controls.position = Vector2(1120, 640)
-	system_controls.add_theme_constant_override("separation", 8)
-	main_menu.add_child(system_controls)
+	var profile_button := Button.new()
+	profile_button.layout_direction = Control.LAYOUT_DIRECTION_LTR
+	profile_button.flat = true
+	profile_button.position = MAIN_PROFILE_BUTTON_RECT.position
+	profile_button.size = MAIN_PROFILE_BUTTON_RECT.size
+	profile_button.tooltip_text = "ویرایش پروفایل کارآگاه"
+	profile_button.pressed.connect(open_player_profile)
+	main_menu.add_child(profile_button)
 	music_toggle_button = Button.new()
 	music_toggle_button.layout_direction = Control.LAYOUT_DIRECTION_LTR
-	music_toggle_button.custom_minimum_size = Vector2(72, 69)
-	music_toggle_button.add_theme_font_size_override("font_size", 38)
+	music_toggle_button.flat = true
+	music_toggle_button.position = Vector2(1116, 18)
+	music_toggle_button.size = Vector2(70, 70)
 	music_toggle_button.pressed.connect(toggle_music)
-	system_controls.add_child(music_toggle_button)
+	main_menu.add_child(music_toggle_button)
 	update_music_toggle_button()
 	exit_button = Button.new()
 	exit_button.layout_direction = Control.LAYOUT_DIRECTION_LTR
-	exit_button.text = "×"
+	exit_button.flat = true
+	exit_button.position = Vector2(1198, 18)
+	exit_button.size = Vector2(70, 70)
 	exit_button.tooltip_text = "خروج از بازی"
-	exit_button.custom_minimum_size = Vector2(72, 69)
-	exit_button.add_theme_font_size_override("font_size", 42)
 	exit_button.pressed.connect(exit_game)
-	system_controls.add_child(exit_button)
+	main_menu.add_child(exit_button)
 	var credit_link := LinkButton.new()
 	credit_link.layout_direction = Control.LAYOUT_DIRECTION_LTR
-	credit_link.text = "by: m.khoshkesht"
+	credit_link.text = "✉"
 	credit_link.uri = "mailto:mo.khoshkesht@gmail.com"
-	credit_link.tooltip_text = "ارسال ایمیل به mo.khoshkesht@gmail.com"
+	credit_link.tooltip_text = "ارتباط با سازنده"
 	credit_link.position = Vector2(26, 664)
-	credit_link.size = Vector2(360, 42)
+	credit_link.size = Vector2(42, 42)
 	credit_link.text_direction = Control.TEXT_DIRECTION_LTR
 	credit_link.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	credit_link.add_theme_font_size_override("font_size", 24)
+	credit_link.add_theme_font_size_override("font_size", 30)
 	credit_link.add_theme_color_override("font_color", Color("ffe09a"))
 	main_menu.add_child(credit_link)
 	update_main_menu_stats()
@@ -359,7 +360,6 @@ func toggle_music() -> void:
 func update_music_toggle_button() -> void:
 	if not music_toggle_button:
 		return
-	music_toggle_button.text = "♫" if music_enabled else "♪×"
 	music_toggle_button.tooltip_text = "قطع موسیقی" if music_enabled else "پخش موسیقی"
 
 func exit_game() -> void:
@@ -397,6 +397,15 @@ func update_main_avatar() -> void:
 	main_avatar.texture = crop
 	main_avatar.show()
 
+func open_player_profile() -> void:
+	name_input.text = player_name
+	selected_gender = player_gender
+	name_error.text = ""
+	refresh_gender_buttons()
+	name_prompt.show()
+	name_prompt.move_to_front()
+	name_input.grab_focus()
+
 func average_stars() -> int:
 	if completed_cases == 0:
 		return 0
@@ -404,6 +413,7 @@ func average_stars() -> int:
 
 func build_name_prompt() -> void:
 	name_prompt = PanelContainer.new()
+	name_prompt.layout_direction = Control.LAYOUT_DIRECTION_LTR
 	name_prompt.anchor_left = 0.5
 	name_prompt.anchor_top = 0.5
 	name_prompt.anchor_right = 0.5
@@ -418,14 +428,14 @@ func build_name_prompt() -> void:
 	content.add_theme_constant_override("separation", 14)
 	name_prompt.add_child(content)
 	var title := Label.new()
-	title.text = "سلام، کارآگاه!"
+	title.text = "پروفایل کارآگاه"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	title.text_direction = Control.TEXT_DIRECTION_RTL
 	title.add_theme_font_size_override("font_size", 35)
 	title.add_theme_color_override("font_color", Color("ffe09a"))
 	content.add_child(title)
 	var description := Label.new()
-	description.text = "اسمت را بنویس تا روی کارت کارآگاهت بنویسیم."
+	description.text = "نام و آواتارت را انتخاب کن تا روی کارت کارآگاهت نمایش دهیم."
 	description.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	description.text_direction = Control.TEXT_DIRECTION_RTL
 	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -470,7 +480,7 @@ func build_name_prompt() -> void:
 	name_error.add_theme_color_override("font_color", Color("ffbf9d"))
 	content.add_child(name_error)
 	var confirm := Button.new()
-	confirm.text = "شروع ماجرا"
+	confirm.text = "ذخیرهٔ تغییرات"
 	confirm.custom_minimum_size = Vector2(210, 46)
 	confirm.add_theme_font_size_override("font_size", 22)
 	confirm.pressed.connect(save_player_name.bind(""))
@@ -776,7 +786,7 @@ func close_clue_panel() -> void:
 func show_intro() -> void:
 	intro_active = true
 	modal_title.text = "درخواست استاد قلم‌زن"
-	modal_description.text = "یه پلاک مهم از جعبهٔ من گم شده. باید فردا برای نمایشگاه آماده باشه. شاگردم فکر می‌کرد نشان روی پلاک کم‌رنگ شده. گفتم بعداً با هم نگاهش می‌کنیم. حالا سرنخ‌ها را پیدا کن تا بفهمیم چی شده."
+	modal_description.text = "یه پلاک مهم از جعبهٔ من گم شده. باید فردا برای نمایشگاه آماده باشه. شاگردم فکر می‌کرد نشان روی پلاک کم‌رنگ شده. گفتم بعداً با هم نگاهش می‌کنیم. حالا سرنخ‌ها را پیدا کن تا بفهمیم چی شده. این پرونده 50 تا سکه داره."
 	modal_close_button.text = "پیدا کردن سرنخ"
 	modal.show()
 

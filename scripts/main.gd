@@ -9,10 +9,8 @@ const NOTEBOOK_BACKGROUND := preload("res://sources/pics/note.png")
 const CASE_REVIEW_BACKGROUND := preload("res://sources/pics/s5.png")
 const MAINPAGE_BACKGROUND := preload("res://sources/pics/mainpage.png")
 const DISABLED_CASE_BUTTON := preload("res://sources/pics/bt-disable.png")
-const HOVER_CASE_BUTTON := preload("res://sources/pics/bt-hover.png")
 const BOY_AVATAR := preload("res://sources/pics/boy.png")
 const GIRL_AVATAR := preload("res://sources/pics/girl.png")
-const LOCKED_CASE_LINES := preload("res://sources/pics/locked-case-lines.png")
 const WRAPPED_PACKAGE := preload("res://sources/pics/clue_wrapped_package.png")
 const BACKGROUND_MUSIC := preload("res://sources/bgmusic.mp3")
 const SAVE_PATH := "user://player_progress.json"
@@ -231,16 +229,6 @@ func build_main_menu() -> void:
 	main_menu.mouse_filter = Control.MOUSE_FILTER_PASS
 	add_child(main_menu)
 	for position_x in [310, 535, 768, 1001]:
-		var locked_lines := TextureButton.new()
-		locked_lines.layout_direction = Control.LAYOUT_DIRECTION_LTR
-		locked_lines.texture_disabled = LOCKED_CASE_LINES
-		locked_lines.position = Vector2(position_x - 4, 177)
-		locked_lines.size = Vector2(208, 214)
-		locked_lines.ignore_texture_size = true
-		locked_lines.stretch_mode = TextureButton.STRETCH_SCALE
-		locked_lines.disabled = true
-		locked_lines.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		main_menu.add_child(locked_lines)
 		var disabled_button := TextureButton.new()
 		disabled_button.layout_direction = Control.LAYOUT_DIRECTION_LTR
 		disabled_button.texture_disabled = DISABLED_CASE_BUTTON
@@ -255,8 +243,6 @@ func build_main_menu() -> void:
 	# مختصات دکمهٔ آبیِ «شروع پرونده» روی کارت اول در تصویر ۱۶:۹ صفحهٔ اصلی است.
 	start.position = Vector2(67, 507)
 	start.size = Vector2(230, 72)
-	start.texture_hover = HOVER_CASE_BUTTON
-	start.texture_pressed = HOVER_CASE_BUTTON
 	start.ignore_texture_size = true
 	start.stretch_mode = TextureButton.STRETCH_SCALE
 	start.tooltip_text = "شروع راز بازار بزرگ"
@@ -690,7 +676,7 @@ func build_clue_panel() -> void:
 	modal_description.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	modal_description.text_direction = Control.TEXT_DIRECTION_RTL
 	modal_description.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	modal_description.add_theme_font_size_override("font_size", 25)
+	modal_description.add_theme_font_size_override("font_size", 28)
 	modal_description.add_theme_color_override("font_color", Color("fff6e6"))
 	box.add_child(modal_description)
 	modal_close_button = Button.new()
@@ -926,7 +912,7 @@ func show_notebook_score_confirmation() -> void:
 		message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		message.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		message.text_direction = Control.TEXT_DIRECTION_RTL
-		message.add_theme_font_size_override("font_size", 25)
+		message.add_theme_font_size_override("font_size", 28)
 		message.add_theme_color_override("font_color", Color("fff6e6"))
 		content.add_child(message)
 		var buttons := HBoxContainer.new()
@@ -996,7 +982,7 @@ func build_dialogue() -> void:
 	dialogue_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	dialogue_text.text_direction = Control.TEXT_DIRECTION_RTL
 	dialogue_text.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	dialogue_text.add_theme_font_size_override("font_size", 24)
+	dialogue_text.add_theme_font_size_override("font_size", 27)
 	dialogue_text.add_theme_color_override("font_color", Color("fff6e6"))
 	content.add_child(dialogue_text)
 	dialogue_next_button = Button.new()
@@ -1146,7 +1132,7 @@ func build_route_panel() -> void:
 	route_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	route_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	route_text.text_direction = Control.TEXT_DIRECTION_RTL
-	route_text.add_theme_font_size_override("font_size", 21)
+	route_text.add_theme_font_size_override("font_size", 24)
 	route_text.add_theme_color_override("font_color", Color("fff6e6"))
 	content.add_child(route_text)
 	route_choices = VBoxContainer.new()
@@ -1217,7 +1203,7 @@ func build_assistant_dialogue() -> void:
 	assistant_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	assistant_text.text_direction = Control.TEXT_DIRECTION_RTL
 	assistant_text.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	assistant_text.add_theme_font_size_override("font_size", 23)
+	assistant_text.add_theme_font_size_override("font_size", 26)
 	assistant_text.add_theme_color_override("font_color", Color("fff6e6"))
 	content.add_child(assistant_text)
 	assistant_next_button = Button.new()
@@ -1373,7 +1359,7 @@ func build_packaging_panel() -> void:
 	packaging_question.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	packaging_question.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	packaging_question.text_direction = Control.TEXT_DIRECTION_RTL
-	packaging_question.add_theme_font_size_override("font_size", 19)
+	packaging_question.add_theme_font_size_override("font_size", 22)
 	packaging_question.add_theme_color_override("font_color", Color("fff6e6"))
 	content.add_child(packaging_question)
 	packaging_choices = VBoxContainer.new()
@@ -1487,7 +1473,7 @@ func build_case_panel() -> void:
 	case_question.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	case_question.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	case_question.text_direction = Control.TEXT_DIRECTION_RTL
-	case_question.add_theme_font_size_override("font_size", 22)
+	case_question.add_theme_font_size_override("font_size", 25)
 	case_question.add_theme_color_override("font_color", Color("fff6e6"))
 	content.add_child(case_question)
 	case_choices = VBoxContainer.new()

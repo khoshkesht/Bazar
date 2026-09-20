@@ -8,6 +8,7 @@ const WAREHOUSE_BACKGROUND := preload("res://sources/pics/s4.png")
 const NOTEBOOK_BACKGROUND := preload("res://sources/pics/note.png")
 const CASE_REVIEW_BACKGROUND := preload("res://sources/pics/s5.png")
 const MAINPAGE_BACKGROUND := preload("res://sources/pics/mainpage.png")
+const STARTUP_BANNER := preload("res://sources/pics/banner.png")
 const LIBRARY_DIALOGUE_BACKGROUND := preload("res://sources/pics/l2/s1-dialog.png")
 const LIBRARY_CLUE_BACKGROUND := preload("res://sources/pics/l2/s1-Clue.png")
 const LIBRARY_NOTEBOOK_BACKGROUND := preload("res://sources/pics/l2/note.png")
@@ -51,6 +52,7 @@ var notebook_button: Button
 var notebook_talk_button: Button
 var notebook_return_texture: Texture2D
 var intro_active := false
+var startup_banner: TextureRect
 var main_menu: Control
 var score_confirmation: PanelContainer
 var score := 50
@@ -244,7 +246,22 @@ func _ready() -> void:
 	generate_time_delay()
 	build_scene()
 	build_main_menu()
+	build_startup_banner()
+	await get_tree().create_timer(2.0).timeout
+	startup_banner.hide()
 	show_main_menu()
+
+func build_startup_banner() -> void:
+	startup_banner = TextureRect.new()
+	startup_banner.layout_direction = Control.LAYOUT_DIRECTION_LTR
+	startup_banner.texture = STARTUP_BANNER
+	startup_banner.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	startup_banner.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	startup_banner.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	startup_banner.z_index = 100
+	startup_banner.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(startup_banner)
+	startup_banner.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 func setup_audio() -> void:
 	# The click is synthesized at runtime, so it adds no external asset or license.
@@ -386,16 +403,18 @@ func build_main_menu() -> void:
 	exit_button.position = Vector2(1198, 18)
 	var credit_link := LinkButton.new()
 	credit_link.layout_direction = Control.LAYOUT_DIRECTION_LTR
-	credit_link.text = "✉"
-	credit_link.uri = "mailto:mo.khoshkesht@gmail.com"
-	credit_link.tooltip_text = "ارتباط با سازنده"
-	credit_link.position = Vector2(26, 664)
-	credit_link.size = Vector2(42, 42)
+	credit_link.text = "🌐"
+	credit_link.uri = "https://gheleghstudio.ir"
+	credit_link.tooltip_text = "تهیه‌کننده: gheleghstudio.ir"
+	credit_link.position = Vector2(20, 654)
+	credit_link.size = Vector2(58, 58)
 	credit_link.text_direction = Control.TEXT_DIRECTION_LTR
 	credit_link.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	credit_link.add_theme_font_size_override("font_size", 30)
+	credit_link.add_theme_font_size_override("font_size", 40)
 	credit_link.add_theme_color_override("font_color", Color("ffe09a"))
 	main_menu.add_child(credit_link)
+	credit_link.position = Vector2(20, 654)
+	credit_link.size = Vector2(58, 58)
 	update_main_menu_stats()
 	build_name_prompt()
 	build_locked_case_notice()
@@ -480,13 +499,13 @@ func build_library_replay_confirmation() -> void:
 	var cancel := Button.new()
 	cancel.text = "فعلاً نه"
 	cancel.custom_minimum_size = Vector2(180, 46)
-	cancel.add_theme_font_size_override("font_size", 21)
+	cancel.add_theme_font_size_override("font_size", 26)
 	cancel.pressed.connect(func() -> void: library_replay_confirmation.hide())
 	buttons.add_child(cancel)
 	var confirm := Button.new()
 	confirm.text = "دوباره بازی می‌کنم"
 	confirm.custom_minimum_size = Vector2(220, 46)
-	confirm.add_theme_font_size_override("font_size", 21)
+	confirm.add_theme_font_size_override("font_size", 26)
 	confirm.pressed.connect(confirm_library_replay)
 	buttons.add_child(confirm)
 
@@ -1064,13 +1083,13 @@ func build_library_footer() -> void:
 	var notebook_open := Button.new()
 	notebook_open.text = "دفتر کارآگاه"
 	notebook_open.custom_minimum_size = Vector2(165, 46)
-	notebook_open.add_theme_font_size_override("font_size", 22)
+	notebook_open.add_theme_font_size_override("font_size", 27)
 	notebook_open.pressed.connect(request_library_notebook.bind(false))
 	row.add_child(notebook_open)
 	var home := Button.new()
 	home.text = "صفحهٔ اصلی"
 	home.custom_minimum_size = Vector2(150, 46)
-	home.add_theme_font_size_override("font_size", 19)
+	home.add_theme_font_size_override("font_size", 24)
 	home.pressed.connect(leave_library_case)
 	row.add_child(home)
 
@@ -1115,7 +1134,7 @@ func build_library_dialogue() -> void:
 	library_dialogue_next = Button.new()
 	library_dialogue_next.text = "بررسی ویترین"
 	library_dialogue_next.custom_minimum_size = Vector2(190, 46)
-	library_dialogue_next.add_theme_font_size_override("font_size", 21)
+	library_dialogue_next.add_theme_font_size_override("font_size", 26)
 	library_dialogue_next.pressed.connect(show_library_clue_scene)
 	content.add_child(library_dialogue_next)
 
@@ -1160,7 +1179,7 @@ func build_library_modal() -> void:
 	content.add_child(library_modal_text)
 	library_modal_action = Button.new()
 	library_modal_action.custom_minimum_size = Vector2(210, 46)
-	library_modal_action.add_theme_font_size_override("font_size", 21)
+	library_modal_action.add_theme_font_size_override("font_size", 26)
 	library_modal_action.pressed.connect(close_library_modal)
 	content.add_child(library_modal_action)
 
@@ -1211,7 +1230,7 @@ func build_library_notebook() -> void:
 	library_notebook_close.layout_direction = Control.LAYOUT_DIRECTION_LTR
 	library_notebook_close.position = Vector2(265, 594)
 	library_notebook_close.size = Vector2(190, 48)
-	library_notebook_close.add_theme_font_size_override("font_size", 21)
+	library_notebook_close.add_theme_font_size_override("font_size", 26)
 	library_notebook_close.pressed.connect(close_library_notebook)
 	library_notebook.add_child(library_notebook_close)
 	library_notebook_close.position = Vector2(265, 594)
@@ -1256,13 +1275,13 @@ func build_library_notebook_confirmation() -> void:
 	var cancel := Button.new()
 	cancel.text = "فعلاً نه"
 	cancel.custom_minimum_size = Vector2(170, 46)
-	cancel.add_theme_font_size_override("font_size", 21)
+	cancel.add_theme_font_size_override("font_size", 26)
 	cancel.pressed.connect(func() -> void: library_notebook_confirmation.hide())
 	buttons.add_child(cancel)
 	var confirm := Button.new()
 	confirm.text = "بله"
 	confirm.custom_minimum_size = Vector2(170, 46)
-	confirm.add_theme_font_size_override("font_size", 21)
+	confirm.add_theme_font_size_override("font_size", 26)
 	confirm.pressed.connect(confirm_library_notebook_cost)
 	buttons.add_child(confirm)
 
@@ -1612,7 +1631,7 @@ func build_library_choice_panel(question: String, answers, title_text: String, a
 			choice.custom_minimum_size = Vector2(680, 52)
 			choice.text_direction = Control.TEXT_DIRECTION_RTL
 			choice.alignment = HORIZONTAL_ALIGNMENT_RIGHT
-			choice.add_theme_font_size_override("font_size", 24)
+			choice.add_theme_font_size_override("font_size", 29)
 			choice.pressed.connect(answer_handler.bind(bool(answer.get("correct", false))))
 			content.add_child(choice)
 			library_choice_buttons.append(choice)
@@ -1620,7 +1639,7 @@ func build_library_choice_panel(question: String, answers, title_text: String, a
 	library_choice_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	library_choice_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	library_choice_status.text_direction = Control.TEXT_DIRECTION_RTL
-	library_choice_status.add_theme_font_size_override("font_size", 21)
+	library_choice_status.add_theme_font_size_override("font_size", 26)
 	library_choice_status.add_theme_color_override("font_color", Color("fff0a5"))
 	content.add_child(library_choice_status)
 	library_choice_panel.show()
@@ -1633,7 +1652,7 @@ func show_library_choice_continue(text: String, action: Callable) -> void:
 	library_continue_button.layout_direction = Control.LAYOUT_DIRECTION_LTR
 	library_continue_button.text = text
 	library_continue_button.text_direction = Control.TEXT_DIRECTION_RTL
-	library_continue_button.add_theme_font_size_override("font_size", 21)
+	library_continue_button.add_theme_font_size_override("font_size", 26)
 	library_continue_button.custom_minimum_size = Vector2(310, 46)
 	library_continue_button.pressed.connect(action)
 	library_choice_status.get_parent().add_child(library_continue_button)
@@ -2124,14 +2143,14 @@ func show_library_evidence_question() -> void:
 			choice.text_direction = Control.TEXT_DIRECTION_RTL
 			choice.alignment = HORIZONTAL_ALIGNMENT_RIGHT
 			choice.custom_minimum_size = Vector2(680, 48)
-			choice.add_theme_font_size_override("font_size", 22)
+			choice.add_theme_font_size_override("font_size", 27)
 			choice.toggled.connect(toggle_library_evidence.bind(str(answer.get("id", ""))))
 			content.add_child(choice)
 			library_choice_buttons.append(choice)
 	var submit := Button.new()
 	submit.text = "تأیید دو مدرک"
 	submit.custom_minimum_size = Vector2(270, 44)
-	submit.add_theme_font_size_override("font_size", 21)
+	submit.add_theme_font_size_override("font_size", 26)
 	submit.pressed.connect(submit_library_evidence)
 	content.add_child(submit)
 	library_continue_button = submit
@@ -2139,7 +2158,7 @@ func show_library_evidence_question() -> void:
 	library_choice_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	library_choice_status.text_direction = Control.TEXT_DIRECTION_RTL
 	library_choice_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	library_choice_status.add_theme_font_size_override("font_size", 20)
+	library_choice_status.add_theme_font_size_override("font_size", 25)
 	library_choice_status.add_theme_color_override("font_color", Color("fff0a5"))
 	content.add_child(library_choice_status)
 	library_choice_panel.show()

@@ -14,6 +14,8 @@ const LIBRARY_NOTEBOOK_BACKGROUND := preload("res://sources/pics/l2/note.png")
 const LIBRARY_PHOTO_BACKGROUND := preload("res://sources/pics/l2/s2.png")
 const LIBRARY_CAMERA_BACKGROUND := preload("res://sources/pics/l2/s3.png")
 const LIBRARY_CAMERA_MATCH_BACKGROUND := preload("res://sources/pics/l2/s4.png")
+const LIBRARY_MAP_INTRO_BACKGROUND := preload("res://sources/pics/l2/s5.png")
+const LIBRARY_MAP_BACKGROUND := preload("res://sources/pics/l2/s6.png")
 const BOY_AVATAR := preload("res://sources/pics/boy.png")
 const GIRL_AVATAR := preload("res://sources/pics/girl.png")
 const WRAPPED_PACKAGE := preload("res://sources/pics/clue_wrapped_package.png")
@@ -151,9 +153,14 @@ var library_camera_count_solved := false
 var library_camera_frame_solved := false
 var library_stage_four_started := false
 var library_camera_bag_match_solved := false
+var library_stage_four_view_seen := false
+var library_stage_five_started := false
+var library_map_seen := false
 var library_photo_active := false
 var library_photo_time_left := 0.0
+var library_timed_scene := ""
 var library_timer_label: Label
+var library_map_preview: TextureRect
 var library_choice_panel: PanelContainer
 var library_choice_status: Label
 var library_choice_buttons: Array[Button] = []
@@ -701,8 +708,12 @@ func load_library_progress() -> void:
 	library_camera_frame_solved = false
 	library_stage_four_started = false
 	library_camera_bag_match_solved = false
+	library_stage_four_view_seen = false
+	library_stage_five_started = false
+	library_map_seen = false
 	library_photo_active = false
 	library_photo_time_left = 0.0
+	library_timed_scene = ""
 	if not FileAccess.file_exists(LIBRARY_SAVE_PATH):
 		return
 	var file := FileAccess.open(LIBRARY_SAVE_PATH, FileAccess.READ)
@@ -727,7 +738,12 @@ func load_library_progress() -> void:
 	library_camera_count_solved = bool(data.get("camera_count_solved", false))
 	library_camera_frame_solved = bool(data.get("camera_frame_solved", false))
 	library_stage_four_started = bool(data.get("stage_4_started", false))
-	library_camera_bag_match_solved = bool(data.get("camera_bag_match_solved", false))
+	# Version 2 changed stage 4 from identifying an owner to a memory puzzle.
+	# Older saves must replay this short stage instead of silently skipping it.
+	library_camera_bag_match_solved = bool(data.get("camera_bag_match_solved", false)) and int(data.get("stage_4_version", 0)) >= 2
+	library_stage_four_view_seen = bool(data.get("stage_4_view_seen", false))
+	library_stage_five_started = bool(data.get("stage_5_started", false))
+	library_map_seen = bool(data.get("library_map_seen", false))
 
 func save_library_progress() -> void:
 	var clue_ids: Array[String] = []
@@ -750,6 +766,10 @@ func save_library_progress() -> void:
 		"camera_frame_solved": library_camera_frame_solved,
 		"stage_4_started": library_stage_four_started,
 		"camera_bag_match_solved": library_camera_bag_match_solved,
+		"stage_4_version": 2,
+		"stage_4_view_seen": library_stage_four_view_seen,
+		"stage_5_started": library_stage_five_started,
+		"library_map_seen": library_map_seen,
 		"case_status": "investigating"
 	}))
 
@@ -797,6 +817,7 @@ func build_library_case_ui() -> void:
 	build_library_notebook()
 	build_library_notebook_confirmation()
 	build_library_photo_timer()
+	build_library_map_preview()
 
 func build_library_header() -> void:
 	library_header = PanelContainer.new()
@@ -1071,6 +1092,22 @@ func build_library_photo_timer() -> void:
 	library_timer_label.layout_direction = Control.LAYOUT_DIRECTION_LTR
 	library_timer_label.position = Vector2(1080, 26)
 	library_timer_label.size = Vector2(170, 52)
+
+func build_library_map_preview() -> void:
+	library_map_preview = TextureRect.new()
+	library_map_preview.layout_direction = Control.LAYOUT_DIRECTION_LTR
+	library_map_preview.texture = LIBRARY_MAP_BACKGROUND
+	library_map_preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	library_map_preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	library_map_preview.position = Vector2(320, 180)
+	library_map_preview.size = Vector2(640, 360)
+	library_map_preview.z_index = 10
+	library_map_preview.mouse_filter = Control.MOUSE_FILTER_STOP
+	library_map_preview.add_theme_stylebox_override("panel", panel_style(Color("ffffff"), Color("78cfda"), 14, 3))
+	library_map_preview.hide()
+	library_layer.add_child(library_map_preview)
+	library_map_preview.position = Vector2(320, 180)
+	library_map_preview.size = Vector2(640, 360)
 	library_timer_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	library_timer_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	library_timer_label.text_direction = Control.TEXT_DIRECTION_RTL
@@ -1275,6 +1312,7 @@ func show_library_stage_two_photo() -> void:
 	library_background.texture = LIBRARY_PHOTO_BACKGROUND
 	library_photo_time_left = float(stage.get("photo_seconds", 10))
 	library_photo_active = true
+	library_timed_scene = "stage_2_photo"
 	library_timer_label.show()
 	update_library_photo_timer()
 	library_prompt_label.text = "عکس را با دقت ببین!"
@@ -1285,11 +1323,35 @@ func update_library_photo_timer() -> void:
 
 func finish_library_stage_two_photo() -> void:
 	library_photo_active = false
+	library_timed_scene = ""
 	library_photo_seen = true
 	save_library_progress()
 	if library_timer_label:
 		library_timer_label.hide()
 	show_library_stage_two_question()
+
+func finish_library_timed_scene() -> void:
+	match library_timed_scene:
+		"stage_2_photo":
+			finish_library_stage_two_photo()
+		"stage_4_camera":
+			library_photo_active = false
+			library_timed_scene = ""
+			library_stage_four_view_seen = true
+			if library_timer_label:
+				library_timer_label.hide()
+			save_library_progress()
+			show_library_stage_four_question()
+		"stage_5_map":
+			library_photo_active = false
+			library_timed_scene = ""
+			library_map_seen = true
+			if library_timer_label:
+				library_timer_label.hide()
+			if library_map_preview:
+				library_map_preview.hide()
+			save_library_progress()
+			library_prompt_label.text = "نقشه را دیدی. حالا برای انتخاب مسیر آماده‌ای."
 
 func show_library_stage_two_question() -> void:
 	library_background.texture = LIBRARY_CLUE_BACKGROUND
@@ -1472,13 +1534,14 @@ func answer_library_stage_three_frame(is_correct: bool) -> void:
 	library_choice_status.text = str(stage.get("frame_correct_feedback", "آفرین!"))
 	save_library_progress()
 	update_library_score_label()
-	show_library_choice_continue("بررسی کیف در دوربین", show_library_stage_four)
+	show_library_choice_continue("بررسی تصویر دوربین", show_library_stage_four)
 
 func show_library_stage_four() -> void:
 	clear_library_hotspots()
 	library_modal.hide()
 	library_notebook_confirmation.hide()
 	library_photo_active = false
+	library_timed_scene = ""
 	if library_timer_label:
 		library_timer_label.hide()
 	if library_choice_panel:
@@ -1487,26 +1550,33 @@ func show_library_stage_four() -> void:
 	save_library_progress()
 	library_background.texture = LIBRARY_CAMERA_MATCH_BACKGROUND
 	if library_camera_bag_match_solved:
-		library_dialogue_panel.hide()
-		library_prompt_label.text = "ارتباط کیف قهوه‌ای با آقای مرادی در دفتر ثبت شد."
+		show_library_stage_five()
 		return
-	var stage: Dictionary = library_case_data.get("stage_4", {})
-	var dialogue_data: Dictionary = stage.get("dialogue", {})
-	library_dialogue_name.text = str(dialogue_data.get("speaker", "کارآگاه"))
-	library_dialogue_text.text = str(dialogue_data.get("text", ""))
 	if library_dialogue_next.pressed.is_connected(show_library_stage_three_math_question):
 		library_dialogue_next.pressed.disconnect(show_library_stage_three_math_question)
-	if not library_dialogue_next.pressed.is_connected(show_library_stage_four_question):
-		library_dialogue_next.pressed.connect(show_library_stage_four_question)
-	library_dialogue_next.text = "دیدن قاب B"
-	library_dialogue_panel.show()
-	library_prompt_label.text = "قاب رنگیِ وسط، همان تصویر B است."
+	if library_stage_four_view_seen:
+		show_library_stage_four_question()
+		return
+	show_library_stage_four_camera_view()
+
+func show_library_stage_four_camera_view() -> void:
+	library_dialogue_panel.hide()
+	if library_choice_panel:
+		library_choice_panel.hide()
+	var stage: Dictionary = library_case_data.get("stage_4", {})
+	library_background.texture = LIBRARY_CAMERA_MATCH_BACKGROUND
+	library_photo_time_left = float(stage.get("view_seconds", 10))
+	library_photo_active = true
+	library_timed_scene = "stage_4_camera"
+	library_timer_label.show()
+	update_library_photo_timer()
+	library_prompt_label.text = "قاب‌های دوربین را با دقت ببین."
 
 func show_library_stage_four_question() -> void:
-	library_background.texture = LIBRARY_CAMERA_MATCH_BACKGROUND
+	library_background.texture = LIBRARY_CAMERA_BACKGROUND
 	library_dialogue_panel.hide()
 	var stage: Dictionary = library_case_data.get("stage_4", {})
-	library_prompt_label.text = "به قاب رنگیِ وسط نگاه کن و کیفی را که می‌بینی انتخاب کن."
+	library_prompt_label.text = "حالا یادآوری کن چه وسیله‌ای نزدیک ویترین دیده بودی."
 	build_library_choice_panel(str(stage.get("question", "")), stage.get("answers", []), "سرنخ کیف", answer_library_stage_four)
 
 func answer_library_stage_four(is_correct: bool) -> void:
@@ -1519,12 +1589,57 @@ func answer_library_stage_four(is_correct: bool) -> void:
 		return
 	library_camera_bag_match_solved = true
 	var clue: Dictionary = stage.get("clue", {})
-	library_found_clues[str(clue.get("id", "moradi_brown_bag_match"))] = true
+	library_found_clues[str(clue.get("id", "brown_bag_in_camera"))] = true
 	for choice in library_choice_buttons:
 		choice.disabled = true
 	library_choice_status.text = str(stage.get("correct_feedback", "آفرین!")) + " سرنخ در دفتر ثبت شد."
 	save_library_progress()
 	update_library_score_label()
+	show_library_choice_continue("دیدن نقشهٔ کتابخانه", show_library_stage_five)
+
+func show_library_stage_five() -> void:
+	clear_library_hotspots()
+	library_modal.hide()
+	library_notebook_confirmation.hide()
+	library_photo_active = false
+	library_timed_scene = ""
+	if library_timer_label:
+		library_timer_label.hide()
+	if library_map_preview:
+		library_map_preview.hide()
+	if library_choice_panel:
+		library_choice_panel.hide()
+	library_stage_five_started = true
+	save_library_progress()
+	library_background.texture = LIBRARY_MAP_INTRO_BACKGROUND
+	if library_map_seen:
+		library_dialogue_panel.hide()
+		library_prompt_label.text = "نقشه را دیدی. حالا برای انتخاب مسیر آماده‌ای."
+		return
+	if library_dialogue_next.pressed.is_connected(show_library_stage_three_math_question):
+		library_dialogue_next.pressed.disconnect(show_library_stage_three_math_question)
+	if not library_dialogue_next.pressed.is_connected(show_library_stage_five_map):
+		library_dialogue_next.pressed.connect(show_library_stage_five_map)
+	var stage: Dictionary = library_case_data.get("stage_5", {})
+	var dialogue_data: Dictionary = stage.get("dialogue", {})
+	library_dialogue_name.text = str(dialogue_data.get("speaker", "آقای براتی"))
+	library_dialogue_text.text = str(dialogue_data.get("text", ""))
+	library_dialogue_next.text = "دیدن نقشه"
+	library_dialogue_panel.show()
+	library_prompt_label.text = "آقای براتی جای کمدها را روی نقشه نشان می‌دهد."
+
+func show_library_stage_five_map() -> void:
+	library_dialogue_panel.hide()
+	var stage: Dictionary = library_case_data.get("stage_5", {})
+	library_map_preview.show()
+	library_map_preview.move_to_front()
+	library_photo_time_left = float(stage.get("map_seconds", 10))
+	library_photo_active = true
+	library_timed_scene = "stage_5_map"
+	library_timer_label.show()
+	library_timer_label.move_to_front()
+	update_library_photo_timer()
+	library_prompt_label.text = "نقشه را با دقت ببین!"
 
 
 func update_library_score_label() -> void:
@@ -1807,7 +1922,7 @@ func _process(delta: float) -> void:
 		library_photo_time_left = maxf(0.0, library_photo_time_left - delta)
 		update_library_photo_timer()
 		if library_photo_time_left <= 0.0:
-			finish_library_stage_two_photo()
+			finish_library_timed_scene()
 
 func _input(event: InputEvent) -> void:
 	# The visual card buttons are painted into the menu background. Some Android

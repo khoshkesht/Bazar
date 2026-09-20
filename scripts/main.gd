@@ -16,6 +16,8 @@ const LIBRARY_CAMERA_BACKGROUND := preload("res://sources/pics/l2/s3.png")
 const LIBRARY_CAMERA_MATCH_BACKGROUND := preload("res://sources/pics/l2/s4.png")
 const LIBRARY_MAP_INTRO_BACKGROUND := preload("res://sources/pics/l2/s5.png")
 const LIBRARY_MAP_BACKGROUND := preload("res://sources/pics/l2/s6.png")
+const LIBRARY_LOCKERS_BACKGROUND := preload("res://sources/pics/l2/s7.png")
+const LIBRARY_OPEN_LOCKER_BACKGROUND := preload("res://sources/pics/l2/s8.png")
 const BOY_AVATAR := preload("res://sources/pics/boy.png")
 const GIRL_AVATAR := preload("res://sources/pics/girl.png")
 const WRAPPED_PACKAGE := preload("res://sources/pics/clue_wrapped_package.png")
@@ -158,6 +160,11 @@ var library_stage_five_started := false
 var library_map_seen := false
 var library_stage_six_started := false
 var library_route_solved := false
+var library_stage_seven_started := false
+var library_locker_27_opened := false
+var library_locker_confirmation_open := false
+var library_stage_eight_started := false
+var library_visitor_card_found := false
 var library_photo_active := false
 var library_photo_time_left := 0.0
 var library_timed_scene := ""
@@ -715,6 +722,11 @@ func load_library_progress() -> void:
 	library_map_seen = false
 	library_stage_six_started = false
 	library_route_solved = false
+	library_stage_seven_started = false
+	library_locker_27_opened = false
+	library_locker_confirmation_open = false
+	library_stage_eight_started = false
+	library_visitor_card_found = false
 	library_photo_active = false
 	library_photo_time_left = 0.0
 	library_timed_scene = ""
@@ -750,6 +762,10 @@ func load_library_progress() -> void:
 	library_map_seen = bool(data.get("library_map_seen", false))
 	library_stage_six_started = bool(data.get("stage_6_started", false))
 	library_route_solved = bool(data.get("route_3_solved", false))
+	library_stage_seven_started = bool(data.get("stage_7_started", false))
+	library_locker_27_opened = bool(data.get("locker_27_opened", false))
+	library_stage_eight_started = bool(data.get("stage_8_started", false))
+	library_visitor_card_found = bool(data.get("moradi_visitor_card_found", false))
 
 func save_library_progress() -> void:
 	var clue_ids: Array[String] = []
@@ -778,6 +794,10 @@ func save_library_progress() -> void:
 		"library_map_seen": library_map_seen,
 		"stage_6_started": library_stage_six_started,
 		"route_3_solved": library_route_solved,
+		"stage_7_started": library_stage_seven_started,
+		"locker_27_opened": library_locker_27_opened,
+		"stage_8_started": library_stage_eight_started,
+		"moradi_visitor_card_found": library_visitor_card_found,
 		"case_status": "investigating"
 	}))
 
@@ -1224,6 +1244,10 @@ func show_library_hotspot(hotspot: Dictionary, button: Button) -> void:
 
 func close_library_modal() -> void:
 	library_modal.hide()
+	if library_locker_confirmation_open:
+		library_locker_confirmation_open = false
+		confirm_library_locker_open()
+		return
 	if library_key_modal_open:
 		library_key_modal_open = false
 		library_stage_one_completed = true
@@ -1264,6 +1288,10 @@ func open_library_notebook() -> void:
 		var stage_four_clue: Dictionary = stage_four.get("clue", {})
 		if library_found_clues.has(str(stage_four_clue.get("id", ""))):
 			entries.append("• " + str(stage_four_clue.get("notebook_entry", "")))
+		var stage_eight: Dictionary = library_case_data.get("stage_8", {})
+		var visitor_card: Dictionary = stage_eight.get("card", {})
+		if library_found_clues.has(str(visitor_card.get("id", ""))):
+			entries.append("• " + str(visitor_card.get("notebook_entry", "")))
 		library_notebook_text.text = "\n".join(entries)
 	else:
 		library_notebook_text.text = "هنوز سرنخی پیدا نکردی. ویترین را نگاه کن."
@@ -1661,9 +1689,7 @@ func show_library_stage_six() -> void:
 	library_background.texture = LIBRARY_MAP_BACKGROUND
 	library_dialogue_panel.hide()
 	if library_route_solved:
-		if library_choice_panel:
-			library_choice_panel.hide()
-		library_prompt_label.text = "مسیر ۳ درست است؛ راه کمدها از پشت انبار می‌گذرد."
+		show_library_stage_seven()
 		return
 	library_prompt_label.text = "مسیر امن‌تر را برای رسیدن به کمدها انتخاب کن."
 	var stage: Dictionary = library_case_data.get("stage_6", {})
@@ -1683,6 +1709,144 @@ func answer_library_stage_six(is_correct: bool) -> void:
 	library_choice_status.text = str(stage.get("correct_feedback", "آفرین!"))
 	save_library_progress()
 	update_library_score_label()
+	show_library_choice_continue("رفتن به بخش کمدها", show_library_stage_seven)
+
+func show_library_stage_seven() -> void:
+	clear_library_hotspots()
+	library_modal.hide()
+	library_notebook_confirmation.hide()
+	library_photo_active = false
+	library_timed_scene = ""
+	if library_timer_label:
+		library_timer_label.hide()
+	if library_map_preview:
+		library_map_preview.hide()
+	if library_choice_panel:
+		library_choice_panel.hide()
+	library_stage_seven_started = true
+	save_library_progress()
+	var stage: Dictionary = library_case_data.get("stage_7", {})
+	if library_locker_27_opened:
+		show_library_open_locker()
+		return
+	library_background.texture = LIBRARY_LOCKERS_BACKGROUND
+	library_dialogue_panel.hide()
+	library_prompt_label.text = str(stage.get("scene_prompt", "روی کمد ۲۷ بزن."))
+	build_library_locker_hotspot(stage.get("locker", {}))
+
+func build_library_locker_hotspot(locker_data) -> void:
+	if not locker_data is Dictionary:
+		return
+	var locker: Dictionary = locker_data
+	var position_data: Array = locker.get("position", [0.5, 0.5])
+	var size_data: Array = locker.get("size", [0.1, 0.1])
+	if position_data.size() < 2 or size_data.size() < 2:
+		return
+	var button := Button.new()
+	button.layout_direction = Control.LAYOUT_DIRECTION_LTR
+	button.top_level = true
+	button.flat = true
+	button.z_index = -5
+	button.tooltip_text = "باز کردن: " + str(locker.get("title", "کمد ۲۷"))
+	button.size = Vector2(float(size_data[0]) * 1280.0, float(size_data[1]) * 720.0)
+	button.pressed.connect(open_library_locker_27)
+	var marker := Panel.new()
+	marker.layout_direction = Control.LAYOUT_DIRECTION_LTR
+	marker.position = button.size * 0.5 - Vector2(12, 12)
+	marker.size = Vector2(24, 24)
+	marker.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	marker.add_theme_stylebox_override("panel", panel_style(Color("ffbf4d"), Color("fff1b0"), 12, 2))
+	button.add_child(marker)
+	marker.position = button.size * 0.5 - Vector2(12, 12)
+	library_layer.add_child(button)
+	button.global_position = Vector2(float(position_data[0]) * 1280.0, float(position_data[1]) * 720.0) - button.size * 0.5
+	library_stage_hotspots.append(button)
+
+func open_library_locker_27() -> void:
+	if not library_found_clues.has("locker_key_27"):
+		library_prompt_label.text = "برای باز کردن این کمد، کلید ۲۷ را لازم داری."
+		return
+	library_locker_confirmation_open = true
+	library_modal_title.text = "کلید کمد ۲۷"
+	library_modal_text.text = "کلید ۲۷ را پیدا کردی! با آن کمد را باز کنیم؟"
+	library_modal_action.text = "باز کردن کمد"
+	library_modal.show()
+	library_modal.move_to_front()
+
+func confirm_library_locker_open() -> void:
+	library_locker_27_opened = true
+	save_library_progress()
+	show_library_open_locker()
+
+func show_library_open_locker() -> void:
+	clear_library_hotspots()
+	library_background.texture = LIBRARY_OPEN_LOCKER_BACKGROUND
+	library_dialogue_panel.hide()
+	var stage: Dictionary = library_case_data.get("stage_7", {})
+	library_prompt_label.text = str(stage.get("opened_prompt", "کمد ۲۷ باز شد."))
+	show_library_locker_discovery(str(stage.get("opened_text", "آفرین!")))
+	show_library_stage_eight()
+
+func show_library_locker_discovery(text: String) -> void:
+	library_dialogue_panel.hide()
+	if library_dialogue_next.pressed.is_connected(show_library_stage_five_map):
+		library_dialogue_next.pressed.disconnect(show_library_stage_five_map)
+	library_prompt_label.text += " " + text
+
+func show_library_stage_eight() -> void:
+	clear_library_hotspots()
+	library_modal.hide()
+	library_stage_eight_started = true
+	save_library_progress()
+	library_background.texture = LIBRARY_OPEN_LOCKER_BACKGROUND
+	library_dialogue_panel.hide()
+	var stage: Dictionary = library_case_data.get("stage_8", {})
+	if library_visitor_card_found:
+		library_prompt_label.text = str(stage.get("found_prompt", "کارت بازدید پیدا شد."))
+		return
+	library_prompt_label.text = "کارت بازدید را داخل کیف پیدا کن."
+	build_library_visitor_card_hotspot(stage.get("card", {}))
+
+func build_library_visitor_card_hotspot(card_data) -> void:
+	if not card_data is Dictionary:
+		return
+	var card: Dictionary = card_data
+	var position_data: Array = card.get("position", [0.5, 0.5])
+	var size_data: Array = card.get("size", [0.1, 0.1])
+	if position_data.size() < 2 or size_data.size() < 2:
+		return
+	var button := Button.new()
+	button.layout_direction = Control.LAYOUT_DIRECTION_LTR
+	button.top_level = true
+	button.flat = true
+	button.z_index = -5
+	button.tooltip_text = "بررسی: " + str(card.get("title", "کارت بازدید"))
+	button.size = Vector2(float(size_data[0]) * 1280.0, float(size_data[1]) * 720.0)
+	button.pressed.connect(show_library_visitor_card.bind(card, button))
+	var marker := Panel.new()
+	marker.layout_direction = Control.LAYOUT_DIRECTION_LTR
+	marker.size = Vector2(24, 24)
+	marker.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	marker.add_theme_stylebox_override("panel", panel_style(Color("ffbf4d"), Color("fff1b0"), 12, 2))
+	button.add_child(marker)
+	marker.position = button.size * 0.5 - Vector2(12, 12)
+	library_layer.add_child(button)
+	button.global_position = Vector2(float(position_data[0]) * 1280.0, float(position_data[1]) * 720.0) - button.size * 0.5
+	library_stage_hotspots.append(button)
+
+func show_library_visitor_card(card: Dictionary, button: Button) -> void:
+	library_visitor_card_found = true
+	library_found_clues[str(card.get("id", "moradi_visitor_card"))] = true
+	button.disabled = true
+	button.hide()
+	save_library_progress()
+	update_library_score_label()
+	library_modal_title.text = str(card.get("title", "کارت بازدید"))
+	library_modal_text.text = str(card.get("description", ""))
+	library_modal_action.text = "ثبت شد"
+	library_prompt_label.text = str(library_case_data.get("stage_8", {}).get("found_prompt", "کارت بازدید پیدا شد."))
+	library_modal.show()
+	library_modal.move_to_front()
 
 
 func update_library_score_label() -> void:

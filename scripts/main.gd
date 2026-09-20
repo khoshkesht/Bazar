@@ -165,6 +165,14 @@ var library_locker_27_opened := false
 var library_locker_confirmation_open := false
 var library_stage_eight_started := false
 var library_visitor_card_found := false
+var library_visitor_card_modal_open := false
+var library_evidence_review_active := false
+var library_evidence_review_seen := false
+var library_stage_ten_started := false
+var library_suspect_solved := false
+var library_deduction_solved := false
+var library_selected_evidence_ids: Dictionary = {}
+var library_case_completed := false
 var library_photo_active := false
 var library_photo_time_left := 0.0
 var library_timed_scene := ""
@@ -727,6 +735,14 @@ func load_library_progress() -> void:
 	library_locker_confirmation_open = false
 	library_stage_eight_started = false
 	library_visitor_card_found = false
+	library_visitor_card_modal_open = false
+	library_evidence_review_active = false
+	library_evidence_review_seen = false
+	library_stage_ten_started = false
+	library_suspect_solved = false
+	library_deduction_solved = false
+	library_selected_evidence_ids.clear()
+	library_case_completed = false
 	library_photo_active = false
 	library_photo_time_left = 0.0
 	library_timed_scene = ""
@@ -766,6 +782,11 @@ func load_library_progress() -> void:
 	library_locker_27_opened = bool(data.get("locker_27_opened", false))
 	library_stage_eight_started = bool(data.get("stage_8_started", false))
 	library_visitor_card_found = bool(data.get("moradi_visitor_card_found", false))
+	library_evidence_review_seen = bool(data.get("evidence_review_seen", false))
+	library_stage_ten_started = bool(data.get("stage_10_started", false))
+	library_suspect_solved = bool(data.get("suspect_solved", false))
+	library_deduction_solved = bool(data.get("deduction_solved", false))
+	library_case_completed = str(data.get("case_status", "")) == "completed"
 
 func save_library_progress() -> void:
 	var clue_ids: Array[String] = []
@@ -798,7 +819,11 @@ func save_library_progress() -> void:
 		"locker_27_opened": library_locker_27_opened,
 		"stage_8_started": library_stage_eight_started,
 		"moradi_visitor_card_found": library_visitor_card_found,
-		"case_status": "investigating"
+		"evidence_review_seen": library_evidence_review_seen,
+		"stage_10_started": library_stage_ten_started,
+		"suspect_solved": library_suspect_solved,
+		"deduction_solved": library_deduction_solved,
+		"case_status": "completed" if library_case_completed else "investigating"
 	}))
 
 func hide_bazaar_case_ui() -> void:
@@ -950,7 +975,7 @@ func build_library_dialogue() -> void:
 	library_dialogue_name = Label.new()
 	library_dialogue_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	library_dialogue_name.text_direction = Control.TEXT_DIRECTION_RTL
-	library_dialogue_name.add_theme_font_size_override("font_size", 27)
+	library_dialogue_name.add_theme_font_size_override("font_size", 29)
 	library_dialogue_name.add_theme_color_override("font_color", Color("a8e1e9"))
 	content.add_child(library_dialogue_name)
 	library_dialogue_text = Label.new()
@@ -958,7 +983,7 @@ func build_library_dialogue() -> void:
 	library_dialogue_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	library_dialogue_text.text_direction = Control.TEXT_DIRECTION_RTL
 	library_dialogue_text.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	library_dialogue_text.add_theme_font_size_override("font_size", 25)
+	library_dialogue_text.add_theme_font_size_override("font_size", 27)
 	library_dialogue_text.add_theme_color_override("font_color", Color("f4ffff"))
 	content.add_child(library_dialogue_text)
 	library_dialogue_next = Button.new()
@@ -1248,6 +1273,10 @@ func close_library_modal() -> void:
 		library_locker_confirmation_open = false
 		confirm_library_locker_open()
 		return
+	if library_visitor_card_modal_open:
+		library_visitor_card_modal_open = false
+		show_library_stage_nine()
+		return
 	if library_key_modal_open:
 		library_key_modal_open = false
 		library_stage_one_completed = true
@@ -1304,6 +1333,12 @@ func close_library_notebook() -> void:
 	library_notebook.hide()
 	library_header.show()
 	library_footer.show()
+	if library_evidence_review_active:
+		library_evidence_review_active = false
+		library_evidence_review_seen = true
+		save_library_progress()
+		show_library_stage_ten()
+		return
 	if library_stage_one_completed:
 		var stage: Dictionary = library_case_data.get("stage_1", {})
 		library_prompt_label.text = str(stage.get("completion_text", "مرحلهٔ اول کامل شد."))
@@ -1448,10 +1483,10 @@ func build_library_choice_panel(question: String, answers, title_text: String, a
 			var choice := Button.new()
 			choice.layout_direction = Control.LAYOUT_DIRECTION_LTR
 			choice.text = str(answer.get("text", ""))
-			choice.custom_minimum_size = Vector2(680, 44)
+			choice.custom_minimum_size = Vector2(680, 52)
 			choice.text_direction = Control.TEXT_DIRECTION_RTL
 			choice.alignment = HORIZONTAL_ALIGNMENT_RIGHT
-			choice.add_theme_font_size_override("font_size", 20)
+			choice.add_theme_font_size_override("font_size", 24)
 			choice.pressed.connect(answer_handler.bind(bool(answer.get("correct", false))))
 			content.add_child(choice)
 			library_choice_buttons.append(choice)
@@ -1775,6 +1810,8 @@ func open_library_locker_27() -> void:
 
 func confirm_library_locker_open() -> void:
 	library_locker_27_opened = true
+	library_found_clues["locker_bag_found"] = true
+	library_found_clues["stolen_book_in_bag"] = true
 	save_library_progress()
 	show_library_open_locker()
 
@@ -1802,7 +1839,7 @@ func show_library_stage_eight() -> void:
 	library_dialogue_panel.hide()
 	var stage: Dictionary = library_case_data.get("stage_8", {})
 	if library_visitor_card_found:
-		library_prompt_label.text = str(stage.get("found_prompt", "کارت بازدید پیدا شد."))
+		show_library_stage_nine()
 		return
 	library_prompt_label.text = "کارت بازدید را داخل کیف پیدا کن."
 	build_library_visitor_card_hotspot(stage.get("card", {}))
@@ -1836,6 +1873,7 @@ func build_library_visitor_card_hotspot(card_data) -> void:
 
 func show_library_visitor_card(card: Dictionary, button: Button) -> void:
 	library_visitor_card_found = true
+	library_visitor_card_modal_open = true
 	library_found_clues[str(card.get("id", "moradi_visitor_card"))] = true
 	button.disabled = true
 	button.hide()
@@ -1847,6 +1885,180 @@ func show_library_visitor_card(card: Dictionary, button: Button) -> void:
 	library_prompt_label.text = str(library_case_data.get("stage_8", {}).get("found_prompt", "کارت بازدید پیدا شد."))
 	library_modal.show()
 	library_modal.move_to_front()
+
+func show_library_stage_nine() -> void:
+	clear_library_hotspots()
+	library_modal.hide()
+	if library_choice_panel:
+		library_choice_panel.hide()
+	if library_evidence_review_seen:
+		show_library_stage_ten()
+		return
+	library_evidence_review_active = true
+	open_library_notebook()
+	var stage: Dictionary = library_case_data.get("stage_9", {})
+	var entries = stage.get("notebook_entries", [])
+	if entries is Array:
+		var lines: Array[String] = []
+		for entry in entries:
+			lines.append("• " + str(entry))
+		library_notebook_text.text = "\n".join(lines)
+
+func show_library_stage_ten() -> void:
+	clear_library_hotspots()
+	library_modal.hide()
+	library_notebook.hide()
+	library_photo_active = false
+	if library_timer_label:
+		library_timer_label.hide()
+	if library_choice_panel:
+		library_choice_panel.hide()
+	library_stage_ten_started = true
+	save_library_progress()
+	library_background.texture = LIBRARY_CAMERA_MATCH_BACKGROUND
+	library_dialogue_panel.hide()
+	if library_deduction_solved:
+		show_library_case_complete()
+		return
+	var stage: Dictionary = library_case_data.get("stage_10", {})
+	if library_suspect_solved:
+		show_library_evidence_question()
+		return
+	library_prompt_label.text = "مراقب باش؛ نتیجه باید با مدرک‌های واقعی ثابت شود."
+	build_library_choice_panel(str(stage.get("suspect_question", "")), stage.get("suspect_answers", []), "انتخاب مظنون", answer_library_stage_ten_suspect)
+
+func answer_library_stage_ten_suspect(is_correct: bool) -> void:
+	var stage: Dictionary = library_case_data.get("stage_10", {})
+	if not is_correct:
+		library_score = maxi(0, library_score - 1)
+		library_choice_status.text = str(stage.get("suspect_wrong_feedback", "با توجه به مدارک، انتخابت اشتباهه."))
+		save_library_progress()
+		update_library_score_label()
+		return
+	library_suspect_solved = true
+	for choice in library_choice_buttons:
+		choice.disabled = true
+	library_choice_status.text = str(stage.get("suspect_correct_feedback", "آفرین!"))
+	save_library_progress()
+	show_library_choice_continue("انتخاب مدرک‌ها", show_library_evidence_question)
+
+func show_library_evidence_question() -> void:
+	if library_choice_panel:
+		library_choice_panel.queue_free()
+		library_choice_panel = null
+	library_choice_buttons.clear()
+	library_selected_evidence_ids.clear()
+	library_choice_panel = PanelContainer.new()
+	library_choice_panel.layout_direction = Control.LAYOUT_DIRECTION_LTR
+	library_choice_panel.anchor_left = 0.5
+	library_choice_panel.anchor_top = 0.5
+	library_choice_panel.anchor_right = 0.5
+	library_choice_panel.anchor_bottom = 0.5
+	library_choice_panel.offset_left = -455
+	library_choice_panel.offset_top = -255
+	library_choice_panel.offset_right = 455
+	library_choice_panel.offset_bottom = 255
+	library_choice_panel.add_theme_stylebox_override("panel", panel_style(Color("123444f2"), Color("78cfda"), 18, 3))
+	library_layer.add_child(library_choice_panel)
+	library_choice_panel.anchor_left = 0.5
+	library_choice_panel.anchor_top = 0.5
+	library_choice_panel.anchor_right = 0.5
+	library_choice_panel.anchor_bottom = 0.5
+	library_choice_panel.offset_left = -455
+	library_choice_panel.offset_top = -255
+	library_choice_panel.offset_right = 455
+	library_choice_panel.offset_bottom = 255
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 10)
+	library_choice_panel.add_child(content)
+	var stage: Dictionary = library_case_data.get("stage_10", {})
+	var title := Label.new()
+	title.text = "دو مدرکِ محکم"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	title.text_direction = Control.TEXT_DIRECTION_RTL
+	title.add_theme_font_size_override("font_size", 29)
+	title.add_theme_color_override("font_color", Color("a8e1e9"))
+	content.add_child(title)
+	var question := Label.new()
+	question.text = str(stage.get("evidence_question", ""))
+	question.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	question.text_direction = Control.TEXT_DIRECTION_RTL
+	question.add_theme_font_size_override("font_size", 24)
+	content.add_child(question)
+	var answers = stage.get("evidence_answers", [])
+	if answers is Array:
+		for answer_data in answers:
+			if not answer_data is Dictionary:
+				continue
+			var answer: Dictionary = answer_data
+			var choice := Button.new()
+			choice.layout_direction = Control.LAYOUT_DIRECTION_LTR
+			choice.toggle_mode = true
+			choice.text = str(answer.get("text", ""))
+			choice.text_direction = Control.TEXT_DIRECTION_RTL
+			choice.alignment = HORIZONTAL_ALIGNMENT_RIGHT
+			choice.custom_minimum_size = Vector2(680, 48)
+			choice.add_theme_font_size_override("font_size", 22)
+			choice.toggled.connect(toggle_library_evidence.bind(str(answer.get("id", ""))))
+			content.add_child(choice)
+			library_choice_buttons.append(choice)
+	var submit := Button.new()
+	submit.text = "تأیید دو مدرک"
+	submit.custom_minimum_size = Vector2(270, 44)
+	submit.add_theme_font_size_override("font_size", 21)
+	submit.pressed.connect(submit_library_evidence)
+	content.add_child(submit)
+	library_continue_button = submit
+	library_choice_status = Label.new()
+	library_choice_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	library_choice_status.text_direction = Control.TEXT_DIRECTION_RTL
+	library_choice_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	library_choice_status.add_theme_font_size_override("font_size", 20)
+	library_choice_status.add_theme_color_override("font_color", Color("fff0a5"))
+	content.add_child(library_choice_status)
+	library_choice_panel.show()
+	library_choice_panel.move_to_front()
+	library_prompt_label.text = "دو مدرکی را بزن که مستقیم نتیجه را ثابت می‌کنند."
+
+func toggle_library_evidence(is_selected: bool, evidence_id: String) -> void:
+	if is_selected:
+		library_selected_evidence_ids[evidence_id] = true
+	else:
+		library_selected_evidence_ids.erase(evidence_id)
+
+func submit_library_evidence() -> void:
+	var is_correct := library_selected_evidence_ids.size() == 2 and library_selected_evidence_ids.has("book_in_bag") and library_selected_evidence_ids.has("moradi_card")
+	var stage: Dictionary = library_case_data.get("stage_10", {})
+	if not is_correct:
+		library_score = maxi(0, library_score - 1)
+		library_choice_status.text = str(stage.get("wrong_feedback", "پاسخ درست نبود."))
+		library_selected_evidence_ids.clear()
+		for choice in library_choice_buttons:
+			choice.button_pressed = false
+		save_library_progress()
+		update_library_score_label()
+		return
+	library_deduction_solved = true
+	for choice in library_choice_buttons:
+		choice.disabled = true
+	if library_continue_button:
+		library_continue_button.disabled = true
+	library_choice_status.text = str(stage.get("evidence_correct_feedback", "آفرین!"))
+	save_library_progress()
+	update_library_score_label()
+	show_library_choice_continue("پایان پرونده", show_library_case_complete)
+
+func show_library_case_complete() -> void:
+	clear_library_hotspots()
+	library_modal.hide()
+	library_notebook.hide()
+	library_dialogue_panel.hide()
+	library_case_completed = true
+	save_library_progress()
+	library_background.texture = LIBRARY_PHOTO_BACKGROUND
+	build_library_choice_panel("آفرین کارآگاه! پرونده حل شد و  به ویترین برگشت. امتیاز نهایی تو: %d" % library_score, [], "پرونده حل شد", answer_library_stage_ten_suspect)
+	library_choice_status.text = "🏅 مشاهده   🏅 حافظه   🏅 ریاضی   🏅 استنتاج"
+	show_library_choice_continue("بازگشت به صفحهٔ اصلی", leave_library_case)
 
 
 func update_library_score_label() -> void:

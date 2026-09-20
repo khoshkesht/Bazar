@@ -117,7 +117,7 @@
     "question": "کدام وسیله را قبلاً نزدیک ویترین دیده بودی؟",
     "answers": [
       { "id": "brown_bag", "text": "کیف قهوه‌ای", "correct": true },
-      { "id": "green_book", "text": "کتاب سبز", "correct": false },
+      { "id": "green_book", "text": "چتر سبز", "correct": false },
       { "id": "black_camera", "text": "دوربین مشکی", "correct": false }
     ],
     "wrong_feedback": "این یکی نیست. دوباره به قاب رنگیِ وسط نگاه کن. ۱ امتیاز کم شد.",
@@ -145,7 +145,7 @@
       },
       {
         "id": "study_hall",
-        "text": "مسیر ۳: سالن نمایش ← سالن مطالعه ← راهرو ← کمدها",
+        "text": "مسیر ۲: سالن نمایش ← سالن مطالعه ← راهرو ← کمدها",
         "correct": false
       },
       {
@@ -179,5 +179,34 @@
       "notebook_entry": "کارت بازدید داخل کیف، نام مرادی را نشان می‌دهد."
     },
     "found_prompt": "کارت بازدید آقای مرادی پیدا شد. سرنخ مهمی است!"
+  },
+  "stage_9": {
+    "notebook_entries": [
+      "کلید ۲۷ کنار ویترین.",
+      "کیف قهوه‌ای کنار ویترین.",
+      "کیف قهوه‌ای در دوربین.",
+      "کیف در کمد ۲۷.",
+      "کتاب داخل کیف.",
+      "کارت مرادی داخل کیف."
+    ]
+  },
+  "stage_10": {
+    "suspect_question": "به نظرت چه کسی کتاب را برداشته است؟",
+    "suspect_answers": [
+      { "id": "amir", "text": "امیر", "correct": false },
+      { "id": "sharifi", "text": "خانم شریفی", "correct": false },
+      { "id": "moradi", "text": "آقای مرادی", "correct": true }
+    ],
+    "evidence_question": "دقیقاً دو مدرکِ قوی را انتخاب کن.",
+    "evidence_answers": [
+      { "id": "book_in_bag", "text": "کتاب داخل کیف قهوه‌ای", "correct": true },
+      { "id": "moradi_card", "text": "کارت مرادی داخل کیف", "correct": true },
+      { "id": "near_display", "text": "ذره بین", "correct": false },
+      { "id": "moved_box", "text": "جعبهٔ جابه‌جا", "correct": false }
+    ],
+    "wrong_feedback": "هنوز نه! مدرکی را انتخاب کن که مستقیم آقای مرادی را به کتاب وصل کند. ۱ امتیاز کم شد.",
+    "suspect_wrong_feedback": "با توجه به مدارک، انتخابت اشتباهه. ۱ امتیاز کم شد.",
+    "suspect_correct_feedback": "آفرین! حالا دو مدرکِ محکم را انتخاب کن.",
+    "evidence_correct_feedback": "عالی بود! این دو مدرک نتیجه را ثابت می‌کنند."
   }
 }

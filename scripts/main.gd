@@ -59,6 +59,8 @@ var earned_stars := 0
 var earned_coins := 0
 var bazaar_completed := false
 var bazaar_stars := 0
+var library_completed := false
+var library_stars := 0
 var player_name := ""
 var player_gender := ""
 var selected_gender := ""
@@ -67,6 +69,7 @@ var main_star_count_label: Label
 var main_coin_count_label: Label
 var main_player_name_label: Label
 var main_bazaar_star_label: Label
+var main_library_star_label: Label
 var main_avatar: TextureRect
 var name_prompt: PanelContainer
 var locked_case_notice: PanelContainer
@@ -342,6 +345,8 @@ func build_main_menu() -> void:
 	main_player_name_label = build_main_stat_label(Vector2(115, 36), Vector2(130, 38))
 	main_bazaar_star_label = build_main_stat_label(Vector2(185, 456), Vector2(66, 34))
 	main_bazaar_star_label.add_theme_color_override("font_color", Color("2d2015"))
+	main_library_star_label = build_main_stat_label(Vector2(427, 456), Vector2(66, 34))
+	main_library_star_label.add_theme_color_override("font_color", Color("2d2015"))
 	main_avatar = TextureRect.new()
 	main_avatar.layout_direction = Control.LAYOUT_DIRECTION_LTR
 	main_avatar.position = Vector2(35, 28)
@@ -462,6 +467,8 @@ func build_main_stat_label(position_value: Vector2, size_value: Vector2) -> Labe
 	label.add_theme_color_override("font_color", Color("fff6e6"))
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	main_menu.add_child(label)
+	label.position = position_value
+	label.size = size_value
 	return label
 
 func update_main_menu_stats() -> void:
@@ -470,6 +477,7 @@ func update_main_menu_stats() -> void:
 	main_coin_count_label.text = to_persian_digits(str(earned_coins))
 	main_player_name_label.text = player_name
 	main_bazaar_star_label.text = to_persian_digits(str(bazaar_stars))
+	main_library_star_label.text = to_persian_digits(str(library_stars))
 	update_main_avatar()
 
 func update_main_avatar() -> void:
@@ -621,6 +629,8 @@ func load_player_progress() -> void:
 	earned_coins = maxi(0, int(data.get("earned_coins", 0)))
 	bazaar_completed = bool(data.get("bazaar_completed", completed_cases > 0))
 	bazaar_stars = clampi(int(data.get("bazaar_stars", 0)), 0, 5)
+	library_completed = bool(data.get("library_completed", false))
+	library_stars = clampi(int(data.get("library_stars", 0)), 0, 5)
 	if bazaar_completed and bazaar_stars == 0:
 		bazaar_stars = clampi(roundi(float(earned_coins) / 50.0 * 5.0), 1, 5)
 		if completed_cases == 1:
@@ -638,7 +648,9 @@ func save_player_progress() -> void:
 		"earned_stars": earned_stars,
 		"earned_coins": earned_coins,
 		"bazaar_completed": bazaar_completed,
-		"bazaar_stars": bazaar_stars
+		"bazaar_stars": bazaar_stars,
+		"library_completed": library_completed,
+		"library_stars": library_stars
 	}
 	file.store_string(JSON.stringify(data))
 
@@ -2053,10 +2065,21 @@ func show_library_case_complete() -> void:
 	library_modal.hide()
 	library_notebook.hide()
 	library_dialogue_panel.hide()
+	var first_completion := not library_completed
 	library_case_completed = true
+	if first_completion:
+		library_completed = true
+		library_stars = clampi(roundi(float(library_score) / 60.0 * 5.0), 1, 5)
+		completed_cases = clampi(completed_cases + 1, 0, 5)
+		earned_stars += library_stars
+		earned_coins += library_score
+		save_player_progress()
 	save_library_progress()
 	library_background.texture = LIBRARY_PHOTO_BACKGROUND
-	build_library_choice_panel("آفرین کارآگاه! پرونده حل شد و  به ویترین برگشت. امتیاز نهایی تو: %d" % library_score, [], "پرونده حل شد", answer_library_stage_ten_suspect)
+	var result_text := "پرونده را با %d سکه و %d ستاره حل کردی!" % [library_score, library_stars]
+	if not first_completion:
+		result_text = "این پرونده را قبلاً حل کردی. این بار %d سکه گرفتی، ولی سکه و ستارهٔ تازه‌ای نمی‌گیری." % library_score
+	build_library_choice_panel(result_text, [], "پرونده حل شد", answer_library_stage_ten_suspect)
 	library_choice_status.text = "🏅 مشاهده   🏅 حافظه   🏅 ریاضی   🏅 استنتاج"
 	show_library_choice_continue("بازگشت به صفحهٔ اصلی", leave_library_case)
 

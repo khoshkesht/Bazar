@@ -156,6 +156,8 @@ var library_camera_bag_match_solved := false
 var library_stage_four_view_seen := false
 var library_stage_five_started := false
 var library_map_seen := false
+var library_stage_six_started := false
+var library_route_solved := false
 var library_photo_active := false
 var library_photo_time_left := 0.0
 var library_timed_scene := ""
@@ -711,6 +713,8 @@ func load_library_progress() -> void:
 	library_stage_four_view_seen = false
 	library_stage_five_started = false
 	library_map_seen = false
+	library_stage_six_started = false
+	library_route_solved = false
 	library_photo_active = false
 	library_photo_time_left = 0.0
 	library_timed_scene = ""
@@ -744,6 +748,8 @@ func load_library_progress() -> void:
 	library_stage_four_view_seen = bool(data.get("stage_4_view_seen", false))
 	library_stage_five_started = bool(data.get("stage_5_started", false))
 	library_map_seen = bool(data.get("library_map_seen", false))
+	library_stage_six_started = bool(data.get("stage_6_started", false))
+	library_route_solved = bool(data.get("route_3_solved", false))
 
 func save_library_progress() -> void:
 	var clue_ids: Array[String] = []
@@ -770,6 +776,8 @@ func save_library_progress() -> void:
 		"stage_4_view_seen": library_stage_four_view_seen,
 		"stage_5_started": library_stage_five_started,
 		"library_map_seen": library_map_seen,
+		"stage_6_started": library_stage_six_started,
+		"route_3_solved": library_route_solved,
 		"case_status": "investigating"
 	}))
 
@@ -1099,15 +1107,15 @@ func build_library_map_preview() -> void:
 	library_map_preview.texture = LIBRARY_MAP_BACKGROUND
 	library_map_preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	library_map_preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	library_map_preview.position = Vector2(320, 180)
-	library_map_preview.size = Vector2(640, 360)
-	library_map_preview.z_index = 10
-	library_map_preview.mouse_filter = Control.MOUSE_FILTER_STOP
+	library_map_preview.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	# The timed map sits over the scene artwork but below the persistent header,
+	# footer and timer (all UI uses z-index 0 or higher).
+	library_map_preview.z_index = -5
+	library_map_preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	library_map_preview.add_theme_stylebox_override("panel", panel_style(Color("ffffff"), Color("78cfda"), 14, 3))
 	library_map_preview.hide()
 	library_layer.add_child(library_map_preview)
-	library_map_preview.position = Vector2(320, 180)
-	library_map_preview.size = Vector2(640, 360)
+	library_map_preview.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	library_timer_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	library_timer_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	library_timer_label.text_direction = Control.TEXT_DIRECTION_RTL
@@ -1351,7 +1359,7 @@ func finish_library_timed_scene() -> void:
 			if library_map_preview:
 				library_map_preview.hide()
 			save_library_progress()
-			library_prompt_label.text = "نقشه را دیدی. حالا برای انتخاب مسیر آماده‌ای."
+			show_library_stage_six()
 
 func show_library_stage_two_question() -> void:
 	library_background.texture = LIBRARY_CLUE_BACKGROUND
@@ -1613,8 +1621,7 @@ func show_library_stage_five() -> void:
 	save_library_progress()
 	library_background.texture = LIBRARY_MAP_INTRO_BACKGROUND
 	if library_map_seen:
-		library_dialogue_panel.hide()
-		library_prompt_label.text = "نقشه را دیدی. حالا برای انتخاب مسیر آماده‌ای."
+		show_library_stage_six()
 		return
 	if library_dialogue_next.pressed.is_connected(show_library_stage_three_math_question):
 		library_dialogue_next.pressed.disconnect(show_library_stage_three_math_question)
@@ -1632,14 +1639,50 @@ func show_library_stage_five_map() -> void:
 	library_dialogue_panel.hide()
 	var stage: Dictionary = library_case_data.get("stage_5", {})
 	library_map_preview.show()
-	library_map_preview.move_to_front()
 	library_photo_time_left = float(stage.get("map_seconds", 10))
 	library_photo_active = true
 	library_timed_scene = "stage_5_map"
 	library_timer_label.show()
-	library_timer_label.move_to_front()
 	update_library_photo_timer()
 	library_prompt_label.text = "نقشه را با دقت ببین!"
+
+func show_library_stage_six() -> void:
+	clear_library_hotspots()
+	library_modal.hide()
+	library_notebook_confirmation.hide()
+	library_photo_active = false
+	library_timed_scene = ""
+	if library_timer_label:
+		library_timer_label.hide()
+	if library_map_preview:
+		library_map_preview.hide()
+	library_stage_six_started = true
+	save_library_progress()
+	library_background.texture = LIBRARY_MAP_BACKGROUND
+	library_dialogue_panel.hide()
+	if library_route_solved:
+		if library_choice_panel:
+			library_choice_panel.hide()
+		library_prompt_label.text = "مسیر ۳ درست است؛ راه کمدها از پشت انبار می‌گذرد."
+		return
+	library_prompt_label.text = "مسیر امن‌تر را برای رسیدن به کمدها انتخاب کن."
+	var stage: Dictionary = library_case_data.get("stage_6", {})
+	build_library_choice_panel(str(stage.get("question", "")), stage.get("answers", []), "انتخاب مسیر", answer_library_stage_six)
+
+func answer_library_stage_six(is_correct: bool) -> void:
+	var stage: Dictionary = library_case_data.get("stage_6", {})
+	if not is_correct:
+		library_score = maxi(0, library_score - 1)
+		library_choice_status.text = str(stage.get("wrong_feedback", "پاسخ درست نبود."))
+		save_library_progress()
+		update_library_score_label()
+		return
+	library_route_solved = true
+	for choice in library_choice_buttons:
+		choice.disabled = true
+	library_choice_status.text = str(stage.get("correct_feedback", "آفرین!"))
+	save_library_progress()
+	update_library_score_label()
 
 
 func update_library_score_label() -> void:

@@ -61,6 +61,7 @@ var earned_stars := 0
 var earned_coins := 0
 var bazaar_completed := false
 var bazaar_stars := 0
+var bazaar_awarded_score := 0
 var library_completed := false
 var library_stars := 0
 var library_awarded_score := 0
@@ -73,6 +74,8 @@ var main_coin_count_label: Label
 var main_player_name_label: Label
 var main_bazaar_star_label: Label
 var main_library_star_label: Label
+var main_notebook_summary: PanelContainer
+var main_notebook_summary_text: Label
 var main_avatar: TextureRect
 var name_prompt: PanelContainer
 var locked_case_notice: PanelContainer
@@ -200,6 +203,8 @@ const LOCKED_CASE_BUTTON_RECTS := [
 	Rect2(1009, 503, 193, 60)
 ]
 const MAIN_PROFILE_BUTTON_RECT := Rect2(782, 615, 155, 82)
+# Full "دفتر کارآگاه" tab on the 1280×720 LTR menu artwork.
+const MAIN_NOTEBOOK_BUTTON_RECT := Rect2(505, 605, 137, 95)
 
 const DIALOGUE_LINES := [
 	{"speaker": "استاد قلم‌زن", "text": "آفرین، کارآگاه! خوب گشتی. من ساعت ۴:۴۵، درست قبل از بیرون رفتن، پلاک را توی جعبه دیدم."},
@@ -382,6 +387,18 @@ func build_main_menu() -> void:
 	profile_button.tooltip_text = "ویرایش پروفایل کارآگاه"
 	profile_button.pressed.connect(open_player_profile)
 	main_menu.add_child(profile_button)
+	profile_button.position = MAIN_PROFILE_BUTTON_RECT.position
+	profile_button.size = MAIN_PROFILE_BUTTON_RECT.size
+	var notebook_summary_button := Button.new()
+	notebook_summary_button.layout_direction = Control.LAYOUT_DIRECTION_LTR
+	notebook_summary_button.flat = true
+	notebook_summary_button.position = MAIN_NOTEBOOK_BUTTON_RECT.position
+	notebook_summary_button.size = MAIN_NOTEBOOK_BUTTON_RECT.size
+	notebook_summary_button.tooltip_text = "خلاصهٔ وضعیت پرونده‌ها"
+	notebook_summary_button.pressed.connect(show_main_notebook_summary)
+	main_menu.add_child(notebook_summary_button)
+	notebook_summary_button.position = MAIN_NOTEBOOK_BUTTON_RECT.position
+	notebook_summary_button.size = MAIN_NOTEBOOK_BUTTON_RECT.size
 	music_toggle_button = Button.new()
 	music_toggle_button.layout_direction = Control.LAYOUT_DIRECTION_LTR
 	music_toggle_button.flat = true
@@ -419,6 +436,7 @@ func build_main_menu() -> void:
 	build_name_prompt()
 	build_locked_case_notice()
 	build_library_replay_confirmation()
+	build_main_notebook_summary()
 
 func build_locked_case_notice() -> void:
 	locked_case_notice = PanelContainer.new()
@@ -508,6 +526,64 @@ func build_library_replay_confirmation() -> void:
 	confirm.add_theme_font_size_override("font_size", 26)
 	confirm.pressed.connect(confirm_library_replay)
 	buttons.add_child(confirm)
+
+func build_main_notebook_summary() -> void:
+	main_notebook_summary = PanelContainer.new()
+	main_notebook_summary.layout_direction = Control.LAYOUT_DIRECTION_LTR
+	main_notebook_summary.anchor_left = 0.5
+	main_notebook_summary.anchor_top = 0.5
+	main_notebook_summary.anchor_right = 0.5
+	main_notebook_summary.anchor_bottom = 0.5
+	main_notebook_summary.offset_left = -405
+	main_notebook_summary.offset_top = -185
+	main_notebook_summary.offset_right = 405
+	main_notebook_summary.offset_bottom = 185
+	main_notebook_summary.add_theme_stylebox_override("panel", panel_style(Color("123444f2"), Color("78cfda"), 18, 3))
+	main_notebook_summary.hide()
+	main_menu.add_child(main_notebook_summary)
+	main_notebook_summary.anchor_left = 0.5
+	main_notebook_summary.anchor_top = 0.5
+	main_notebook_summary.anchor_right = 0.5
+	main_notebook_summary.anchor_bottom = 0.5
+	main_notebook_summary.offset_left = -405
+	main_notebook_summary.offset_top = -185
+	main_notebook_summary.offset_right = 405
+	main_notebook_summary.offset_bottom = 185
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 14)
+	main_notebook_summary.add_child(content)
+	var title := Label.new()
+	title.text = "دفتر کارآگاه"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	title.text_direction = Control.TEXT_DIRECTION_RTL
+	title.add_theme_font_size_override("font_size", 31)
+	title.add_theme_color_override("font_color", Color("a8e1e9"))
+	content.add_child(title)
+	main_notebook_summary_text = Label.new()
+	main_notebook_summary_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	main_notebook_summary_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	main_notebook_summary_text.text_direction = Control.TEXT_DIRECTION_RTL
+	main_notebook_summary_text.add_theme_font_size_override("font_size", 24)
+	main_notebook_summary_text.add_theme_color_override("font_color", Color("f4ffff"))
+	content.add_child(main_notebook_summary_text)
+	var close := Button.new()
+	close.text = "بستن"
+	close.custom_minimum_size = Vector2(150, 46)
+	close.add_theme_font_size_override("font_size", 24)
+	close.pressed.connect(func() -> void: main_notebook_summary.hide())
+	content.add_child(close)
+
+func show_main_notebook_summary() -> void:
+	var bazaar_line := case_summary_line("پروندهٔ بازار بزرگ تهران", bazaar_completed, bazaar_awarded_score, bazaar_stars)
+	var library_line := case_summary_line("پروندهٔ کتابخانه", library_completed, library_awarded_score, library_stars)
+	main_notebook_summary_text.text = bazaar_line + "\n" + library_line + "\nپرونده‌های بعدی: به‌زودی"
+	main_notebook_summary.show()
+	main_notebook_summary.move_to_front()
+
+func case_summary_line(title: String, is_completed: bool, final_score: int, stars: int) -> String:
+	if not is_completed:
+		return title + ": شروع نشده"
+	return "%s: حل شده — %d امتیاز — %d ستاره" % [title, final_score, stars]
 
 func show_locked_case_notice() -> void:
 	locked_case_notice.show()
@@ -701,6 +777,7 @@ func load_player_progress() -> void:
 	earned_coins = maxi(0, int(data.get("earned_coins", 0)))
 	bazaar_completed = bool(data.get("bazaar_completed", completed_cases > 0))
 	bazaar_stars = clampi(int(data.get("bazaar_stars", 0)), 0, 5)
+	bazaar_awarded_score = maxi(0, int(data.get("bazaar_awarded_score", 0)))
 	library_completed = bool(data.get("library_completed", false))
 	library_stars = clampi(int(data.get("library_stars", 0)), 0, 5)
 	library_awarded_score = maxi(0, int(data.get("library_awarded_score", 0)))
@@ -708,6 +785,8 @@ func load_player_progress() -> void:
 		bazaar_stars = clampi(roundi(float(earned_coins) / 50.0 * 5.0), 1, 5)
 		if completed_cases == 1:
 			earned_stars = bazaar_stars
+	if bazaar_completed and bazaar_awarded_score == 0:
+		bazaar_awarded_score = maxi(0, earned_coins - library_awarded_score)
 
 func save_player_progress() -> void:
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -722,6 +801,7 @@ func save_player_progress() -> void:
 		"earned_coins": earned_coins,
 		"bazaar_completed": bazaar_completed,
 		"bazaar_stars": bazaar_stars,
+		"bazaar_awarded_score": bazaar_awarded_score,
 		"library_completed": library_completed,
 		"library_stars": library_stars,
 		"library_awarded_score": library_awarded_score
@@ -3237,6 +3317,7 @@ func show_case_ending() -> void:
 	if first_completion:
 		bazaar_completed = true
 		bazaar_stars = clampi(roundi(float(score) / 50.0 * 5.0), 1, 5)
+		bazaar_awarded_score = score
 		completed_cases = clampi(completed_cases + 1, 0, 5)
 		earned_stars += bazaar_stars
 		earned_coins += score

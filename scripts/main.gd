@@ -12,6 +12,7 @@ const LIBRARY_DIALOGUE_BACKGROUND := preload("res://sources/pics/l2/s1-dialog.pn
 const LIBRARY_CLUE_BACKGROUND := preload("res://sources/pics/l2/s1-Clue.png")
 const LIBRARY_NOTEBOOK_BACKGROUND := preload("res://sources/pics/l2/note.png")
 const LIBRARY_PHOTO_BACKGROUND := preload("res://sources/pics/l2/s2.png")
+const LIBRARY_CAMERA_BACKGROUND := preload("res://sources/pics/l2/s3.png")
 const BOY_AVATAR := preload("res://sources/pics/boy.png")
 const GIRL_AVATAR := preload("res://sources/pics/girl.png")
 const WRAPPED_PACKAGE := preload("res://sources/pics/clue_wrapped_package.png")
@@ -144,12 +145,16 @@ var library_key_modal_open := false
 var library_stage_two_started := false
 var library_photo_seen := false
 var library_stage_two_solved := false
+var library_stage_three_started := false
+var library_camera_count_solved := false
+var library_camera_frame_solved := false
 var library_photo_active := false
 var library_photo_time_left := 0.0
 var library_timer_label: Label
 var library_choice_panel: PanelContainer
 var library_choice_status: Label
 var library_choice_buttons: Array[Button] = []
+var library_continue_button: Button
 
 # The menu artwork contains all visual buttons. These rectangles are only the
 # transparent touch targets aligned to that 1280×720 artwork.
@@ -688,6 +693,9 @@ func load_library_progress() -> void:
 	library_stage_two_started = false
 	library_photo_seen = false
 	library_stage_two_solved = false
+	library_stage_three_started = false
+	library_camera_count_solved = false
+	library_camera_frame_solved = false
 	library_photo_active = false
 	library_photo_time_left = 0.0
 	if not FileAccess.file_exists(LIBRARY_SAVE_PATH):
@@ -710,6 +718,9 @@ func load_library_progress() -> void:
 	library_stage_two_started = bool(data.get("stage_2_started", false))
 	library_photo_seen = bool(data.get("stage_2_photo_seen", false))
 	library_stage_two_solved = bool(data.get("stage_2_solved", false))
+	library_stage_three_started = bool(data.get("stage_3_started", false))
+	library_camera_count_solved = bool(data.get("camera_count_solved", false))
+	library_camera_frame_solved = bool(data.get("camera_frame_solved", false))
 
 func save_library_progress() -> void:
 	var clue_ids: Array[String] = []
@@ -727,6 +738,9 @@ func save_library_progress() -> void:
 		"stage_2_started": library_stage_two_started,
 		"stage_2_photo_seen": library_photo_seen,
 		"stage_2_solved": library_stage_two_solved,
+		"stage_3_started": library_stage_three_started,
+		"camera_count_solved": library_camera_count_solved,
+		"camera_frame_solved": library_camera_frame_solved,
 		"case_status": "investigating"
 	}))
 
@@ -1222,9 +1236,7 @@ func show_library_stage_two() -> void:
 	library_stage_two_started = true
 	save_library_progress()
 	if library_stage_two_solved:
-		library_background.texture = LIBRARY_CLUE_BACKGROUND
-		library_dialogue_panel.hide()
-		library_prompt_label.text = "سرنخ کیف قهوه‌ای در دفتر ثبت شد."
+		show_library_stage_three()
 		return
 	if library_photo_seen:
 		show_library_stage_two_question()
@@ -1271,13 +1283,14 @@ func show_library_stage_two_question() -> void:
 	library_dialogue_panel.hide()
 	var stage: Dictionary = library_case_data.get("stage_2", {})
 	library_prompt_label.text = "عکس بسته شد. حالا جواب بده."
-	build_library_choice_panel(str(stage.get("question", "")), stage.get("answers", []))
+	build_library_choice_panel(str(stage.get("question", "")), stage.get("answers", []), "معمای عکس", answer_library_stage_two)
 
-func build_library_choice_panel(question: String, answers) -> void:
+func build_library_choice_panel(question: String, answers, title_text: String, answer_handler: Callable) -> void:
 	if library_choice_panel:
 		library_choice_panel.queue_free()
 		library_choice_panel = null
 	library_choice_buttons.clear()
+	library_continue_button = null
 	library_choice_panel = PanelContainer.new()
 	library_choice_panel.layout_direction = Control.LAYOUT_DIRECTION_LTR
 	library_choice_panel.anchor_left = 0.5
@@ -1302,7 +1315,7 @@ func build_library_choice_panel(question: String, answers) -> void:
 	content.add_theme_constant_override("separation", 12)
 	library_choice_panel.add_child(content)
 	var title := Label.new()
-	title.text = "معمای عکس"
+	title.text = title_text
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	title.text_direction = Control.TEXT_DIRECTION_RTL
 	title.add_theme_font_size_override("font_size", 30)
@@ -1328,7 +1341,7 @@ func build_library_choice_panel(question: String, answers) -> void:
 			choice.text_direction = Control.TEXT_DIRECTION_RTL
 			choice.alignment = HORIZONTAL_ALIGNMENT_RIGHT
 			choice.add_theme_font_size_override("font_size", 20)
-			choice.pressed.connect(answer_library_stage_two.bind(bool(answer.get("correct", false))))
+			choice.pressed.connect(answer_handler.bind(bool(answer.get("correct", false))))
 			content.add_child(choice)
 			library_choice_buttons.append(choice)
 	library_choice_status = Label.new()
@@ -1340,6 +1353,18 @@ func build_library_choice_panel(question: String, answers) -> void:
 	content.add_child(library_choice_status)
 	library_choice_panel.show()
 	library_choice_panel.move_to_front()
+
+func show_library_choice_continue(text: String, action: Callable) -> void:
+	if not library_choice_status or not is_instance_valid(library_choice_status):
+		return
+	library_continue_button = Button.new()
+	library_continue_button.layout_direction = Control.LAYOUT_DIRECTION_LTR
+	library_continue_button.text = text
+	library_continue_button.text_direction = Control.TEXT_DIRECTION_RTL
+	library_continue_button.add_theme_font_size_override("font_size", 21)
+	library_continue_button.custom_minimum_size = Vector2(310, 46)
+	library_continue_button.pressed.connect(action)
+	library_choice_status.get_parent().add_child(library_continue_button)
 
 func answer_library_stage_two(is_correct: bool) -> void:
 	if library_stage_two_solved:
@@ -1357,6 +1382,82 @@ func answer_library_stage_two(is_correct: bool) -> void:
 	for choice in library_choice_buttons:
 		choice.disabled = true
 	library_choice_status.text = str(stage.get("correct_feedback", "آفرین!")) + " سرنخ در دفتر ثبت شد."
+	save_library_progress()
+	update_library_score_label()
+	show_library_choice_continue("رفتن به دوربین‌ها", show_library_stage_three)
+
+func show_library_stage_three() -> void:
+	clear_library_hotspots()
+	library_modal.hide()
+	library_notebook_confirmation.hide()
+	library_photo_active = false
+	if library_timer_label:
+		library_timer_label.hide()
+	if library_choice_panel:
+		library_choice_panel.hide()
+	library_stage_three_started = true
+	save_library_progress()
+	library_background.texture = LIBRARY_CAMERA_BACKGROUND
+	if library_camera_frame_solved:
+		library_dialogue_panel.hide()
+		library_prompt_label.text = "تصویر درست دوربین پیدا شد: قاب B."
+		return
+	if library_camera_count_solved:
+		show_library_stage_three_frame_question()
+		return
+	var stage: Dictionary = library_case_data.get("stage_3", {})
+	var dialogue_data: Dictionary = stage.get("dialogue", {})
+	library_dialogue_name.text = str(dialogue_data.get("speaker", "آقای براتی"))
+	library_dialogue_text.text = str(dialogue_data.get("text", ""))
+	if library_dialogue_next.pressed.is_connected(show_library_stage_two_photo):
+		library_dialogue_next.pressed.disconnect(show_library_stage_two_photo)
+	if not library_dialogue_next.pressed.is_connected(show_library_stage_three_math_question):
+		library_dialogue_next.pressed.connect(show_library_stage_three_math_question)
+	library_dialogue_next.text = "شروع حساب"
+	library_dialogue_panel.show()
+	library_prompt_label.text = "اول تعداد آدم‌های داخل سالن را حساب کن."
+
+func show_library_stage_three_math_question() -> void:
+	library_background.texture = LIBRARY_CAMERA_BACKGROUND
+	library_dialogue_panel.hide()
+	var stage: Dictionary = library_case_data.get("stage_3", {})
+	library_prompt_label.text = "یادت باشد: دو نفر فقط از سالن نمایش بیرون رفته‌اند."
+	build_library_choice_panel(str(stage.get("math_question", "")), stage.get("math_answers", []), "حساب دوربین", answer_library_stage_three_math)
+
+func answer_library_stage_three_math(is_correct: bool) -> void:
+	var stage: Dictionary = library_case_data.get("stage_3", {})
+	if not is_correct:
+		library_score = maxi(0, library_score - 1)
+		library_choice_status.text = str(stage.get("wrong_feedback", "پاسخ درست نبود."))
+		save_library_progress()
+		update_library_score_label()
+		return
+	library_camera_count_solved = true
+	for choice in library_choice_buttons:
+		choice.disabled = true
+	library_choice_status.text = str(stage.get("math_correct_feedback", "آفرین!"))
+	save_library_progress()
+	show_library_choice_continue("انتخاب تصویر دوربین", show_library_stage_three_frame_question)
+
+func show_library_stage_three_frame_question() -> void:
+	library_background.texture = LIBRARY_CAMERA_BACKGROUND
+	library_dialogue_panel.hide()
+	var stage: Dictionary = library_case_data.get("stage_3", {})
+	library_prompt_label.text = "سه قاب را نگاه کن و قابی را انتخاب کن که ۶ نفر دارد."
+	build_library_choice_panel(str(stage.get("frame_question", "")), stage.get("frame_answers", []), "انتخاب قاب دوربین", answer_library_stage_three_frame)
+
+func answer_library_stage_three_frame(is_correct: bool) -> void:
+	var stage: Dictionary = library_case_data.get("stage_3", {})
+	if not is_correct:
+		library_score = maxi(0, library_score - 1)
+		library_choice_status.text = str(stage.get("wrong_feedback", "پاسخ درست نبود."))
+		save_library_progress()
+		update_library_score_label()
+		return
+	library_camera_frame_solved = true
+	for choice in library_choice_buttons:
+		choice.disabled = true
+	library_choice_status.text = str(stage.get("frame_correct_feedback", "آفرین!"))
 	save_library_progress()
 	update_library_score_label()
 

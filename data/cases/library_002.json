@@ -90,5 +90,26 @@
       "title": "کیف قهوه‌ای",
       "notebook_entry": "یک کیف قهوه‌ای کنار ویترین دیده شد."
     }
+  },
+  "stage_3": {
+    "dialogue": {
+      "speaker": "آقای براتی، کتابدار",
+      "text": "دوربین سه عکس از سالن نمایش دارد. اول حساب کنیم چند نفر باید آن‌جا باشند."
+    },
+    "math_question": "۷ نفر در سالن بودند. ۲ نفر از خودِ سالن بیرون رفتند و ۱ نفر وارد شد. حالا چند نفر در سالن هستند؟",
+    "math_answers": [
+      { "id": "five", "text": "۵ نفر", "correct": false },
+      { "id": "six", "text": "۶ نفر", "correct": true },
+      { "id": "seven", "text": "۷ نفر", "correct": false }
+    ],
+    "frame_question": "حالا کدام تصویر دوربین باید درست باشد؟",
+    "frame_answers": [
+      { "id": "A", "text": "تصویر A — پنج نفر", "correct": false },
+      { "id": "B", "text": "تصویر B — شش نفر", "correct": true },
+      { "id": "C", "text": "تصویر C — هفت نفر", "correct": false }
+    ],
+    "wrong_feedback": "هنوز نه! آرام حساب کن و دوباره نگاه کن. ۱ امتیاز کم شد.",
+    "math_correct_feedback": "آفرین! ۷ − ۲ + ۱ می‌شود ۶.",
+    "frame_correct_feedback": "درست است! تصویر B شش نفر را نشان می‌دهد."
   }
 }

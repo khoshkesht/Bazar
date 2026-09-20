@@ -279,19 +279,22 @@ func build_main_menu() -> void:
 	music_toggle_button = Button.new()
 	music_toggle_button.layout_direction = Control.LAYOUT_DIRECTION_LTR
 	music_toggle_button.flat = true
-	music_toggle_button.position = Vector2(1116, 18)
 	music_toggle_button.size = Vector2(70, 70)
 	music_toggle_button.pressed.connect(toggle_music)
 	main_menu.add_child(music_toggle_button)
+	# Reapply positions after parenting. On Android, an RTL system locale can
+	# otherwise mirror a positioned child while it is attached, leaving its tap
+	# rectangle somewhere other than the icon painted into the menu artwork.
+	music_toggle_button.position = Vector2(1116, 18)
 	update_music_toggle_button()
 	exit_button = Button.new()
 	exit_button.layout_direction = Control.LAYOUT_DIRECTION_LTR
 	exit_button.flat = true
-	exit_button.position = Vector2(1198, 18)
 	exit_button.size = Vector2(70, 70)
 	exit_button.tooltip_text = "خروج از بازی"
 	exit_button.pressed.connect(exit_game)
 	main_menu.add_child(exit_button)
+	exit_button.position = Vector2(1198, 18)
 	var credit_link := LinkButton.new()
 	credit_link.layout_direction = Control.LAYOUT_DIRECTION_LTR
 	credit_link.text = "✉"

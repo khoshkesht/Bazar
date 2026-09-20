@@ -13,6 +13,7 @@ const LIBRARY_CLUE_BACKGROUND := preload("res://sources/pics/l2/s1-Clue.png")
 const LIBRARY_NOTEBOOK_BACKGROUND := preload("res://sources/pics/l2/note.png")
 const LIBRARY_PHOTO_BACKGROUND := preload("res://sources/pics/l2/s2.png")
 const LIBRARY_CAMERA_BACKGROUND := preload("res://sources/pics/l2/s3.png")
+const LIBRARY_CAMERA_MATCH_BACKGROUND := preload("res://sources/pics/l2/s4.png")
 const BOY_AVATAR := preload("res://sources/pics/boy.png")
 const GIRL_AVATAR := preload("res://sources/pics/girl.png")
 const WRAPPED_PACKAGE := preload("res://sources/pics/clue_wrapped_package.png")
@@ -148,6 +149,8 @@ var library_stage_two_solved := false
 var library_stage_three_started := false
 var library_camera_count_solved := false
 var library_camera_frame_solved := false
+var library_stage_four_started := false
+var library_camera_bag_match_solved := false
 var library_photo_active := false
 var library_photo_time_left := 0.0
 var library_timer_label: Label
@@ -696,6 +699,8 @@ func load_library_progress() -> void:
 	library_stage_three_started = false
 	library_camera_count_solved = false
 	library_camera_frame_solved = false
+	library_stage_four_started = false
+	library_camera_bag_match_solved = false
 	library_photo_active = false
 	library_photo_time_left = 0.0
 	if not FileAccess.file_exists(LIBRARY_SAVE_PATH):
@@ -721,6 +726,8 @@ func load_library_progress() -> void:
 	library_stage_three_started = bool(data.get("stage_3_started", false))
 	library_camera_count_solved = bool(data.get("camera_count_solved", false))
 	library_camera_frame_solved = bool(data.get("camera_frame_solved", false))
+	library_stage_four_started = bool(data.get("stage_4_started", false))
+	library_camera_bag_match_solved = bool(data.get("camera_bag_match_solved", false))
 
 func save_library_progress() -> void:
 	var clue_ids: Array[String] = []
@@ -741,6 +748,8 @@ func save_library_progress() -> void:
 		"stage_3_started": library_stage_three_started,
 		"camera_count_solved": library_camera_count_solved,
 		"camera_frame_solved": library_camera_frame_solved,
+		"stage_4_started": library_stage_four_started,
+		"camera_bag_match_solved": library_camera_bag_match_solved,
 		"case_status": "investigating"
 	}))
 
@@ -1206,6 +1215,10 @@ func open_library_notebook() -> void:
 		var stage_two_clue: Dictionary = stage_two.get("clue", {})
 		if library_found_clues.has(str(stage_two_clue.get("id", ""))):
 			entries.append("• " + str(stage_two_clue.get("notebook_entry", "")))
+		var stage_four: Dictionary = library_case_data.get("stage_4", {})
+		var stage_four_clue: Dictionary = stage_four.get("clue", {})
+		if library_found_clues.has(str(stage_four_clue.get("id", ""))):
+			entries.append("• " + str(stage_four_clue.get("notebook_entry", "")))
 		library_notebook_text.text = "\n".join(entries)
 	else:
 		library_notebook_text.text = "هنوز سرنخی پیدا نکردی. ویترین را نگاه کن."
@@ -1399,8 +1412,7 @@ func show_library_stage_three() -> void:
 	save_library_progress()
 	library_background.texture = LIBRARY_CAMERA_BACKGROUND
 	if library_camera_frame_solved:
-		library_dialogue_panel.hide()
-		library_prompt_label.text = "تصویر درست دوربین پیدا شد: قاب B."
+		show_library_stage_four()
 		return
 	if library_camera_count_solved:
 		show_library_stage_three_frame_question()
@@ -1458,6 +1470,59 @@ func answer_library_stage_three_frame(is_correct: bool) -> void:
 	for choice in library_choice_buttons:
 		choice.disabled = true
 	library_choice_status.text = str(stage.get("frame_correct_feedback", "آفرین!"))
+	save_library_progress()
+	update_library_score_label()
+	show_library_choice_continue("بررسی کیف در دوربین", show_library_stage_four)
+
+func show_library_stage_four() -> void:
+	clear_library_hotspots()
+	library_modal.hide()
+	library_notebook_confirmation.hide()
+	library_photo_active = false
+	if library_timer_label:
+		library_timer_label.hide()
+	if library_choice_panel:
+		library_choice_panel.hide()
+	library_stage_four_started = true
+	save_library_progress()
+	library_background.texture = LIBRARY_CAMERA_MATCH_BACKGROUND
+	if library_camera_bag_match_solved:
+		library_dialogue_panel.hide()
+		library_prompt_label.text = "ارتباط کیف قهوه‌ای با آقای مرادی در دفتر ثبت شد."
+		return
+	var stage: Dictionary = library_case_data.get("stage_4", {})
+	var dialogue_data: Dictionary = stage.get("dialogue", {})
+	library_dialogue_name.text = str(dialogue_data.get("speaker", "کارآگاه"))
+	library_dialogue_text.text = str(dialogue_data.get("text", ""))
+	if library_dialogue_next.pressed.is_connected(show_library_stage_three_math_question):
+		library_dialogue_next.pressed.disconnect(show_library_stage_three_math_question)
+	if not library_dialogue_next.pressed.is_connected(show_library_stage_four_question):
+		library_dialogue_next.pressed.connect(show_library_stage_four_question)
+	library_dialogue_next.text = "دیدن قاب B"
+	library_dialogue_panel.show()
+	library_prompt_label.text = "قاب رنگیِ وسط، همان تصویر B است."
+
+func show_library_stage_four_question() -> void:
+	library_background.texture = LIBRARY_CAMERA_MATCH_BACKGROUND
+	library_dialogue_panel.hide()
+	var stage: Dictionary = library_case_data.get("stage_4", {})
+	library_prompt_label.text = "به قاب رنگیِ وسط نگاه کن و کیفی را که می‌بینی انتخاب کن."
+	build_library_choice_panel(str(stage.get("question", "")), stage.get("answers", []), "سرنخ کیف", answer_library_stage_four)
+
+func answer_library_stage_four(is_correct: bool) -> void:
+	var stage: Dictionary = library_case_data.get("stage_4", {})
+	if not is_correct:
+		library_score = maxi(0, library_score - 1)
+		library_choice_status.text = str(stage.get("wrong_feedback", "پاسخ درست نبود."))
+		save_library_progress()
+		update_library_score_label()
+		return
+	library_camera_bag_match_solved = true
+	var clue: Dictionary = stage.get("clue", {})
+	library_found_clues[str(clue.get("id", "moradi_brown_bag_match"))] = true
+	for choice in library_choice_buttons:
+		choice.disabled = true
+	library_choice_status.text = str(stage.get("correct_feedback", "آفرین!")) + " سرنخ در دفتر ثبت شد."
 	save_library_progress()
 	update_library_score_label()
 

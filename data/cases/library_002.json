@@ -111,5 +111,24 @@
     "wrong_feedback": "هنوز نه! آرام حساب کن و دوباره نگاه کن. ۱ امتیاز کم شد.",
     "math_correct_feedback": "آفرین! ۷ − ۲ + ۱ می‌شود ۶.",
     "frame_correct_feedback": "درست است! تصویر B شش نفر را نشان می‌دهد."
+  },
+  "stage_4": {
+    "dialogue": {
+      "speaker": "کارآگاه",
+      "text": "حالا به قاب رنگیِ وسط، یعنی B، نگاه کن. کدام کیف را می‌بینی؟"
+    },
+    "question": "کدام کیف در تصویر B دیده می‌شود؟",
+    "answers": [
+      { "id": "brown_bag", "text": "کیف قهوه‌ای", "correct": true },
+      { "id": "green_backpack", "text": "کوله‌پشتی سبز", "correct": false },
+      { "id": "white_bag", "text": "کیف سفید", "correct": false }
+    ],
+    "wrong_feedback": "این یکی نیست. دوباره به قاب رنگیِ وسط نگاه کن. ۱ امتیاز کم شد.",
+    "correct_feedback": "آفرین! آقای مرادی همان کیف قهوه‌ای را همراه دارد.",
+    "clue": {
+      "id": "moradi_brown_bag_match",
+      "title": "کیف آقای مرادی",
+      "notebook_entry": "آقای مرادی همان کیف قهوه‌ای را همراه دارد."
+    }
   }
 }

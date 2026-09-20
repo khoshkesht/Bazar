@@ -11,6 +11,7 @@ const MAINPAGE_BACKGROUND := preload("res://sources/pics/mainpage.png")
 const LIBRARY_DIALOGUE_BACKGROUND := preload("res://sources/pics/l2/s1-dialog.png")
 const LIBRARY_CLUE_BACKGROUND := preload("res://sources/pics/l2/s1-Clue.png")
 const LIBRARY_NOTEBOOK_BACKGROUND := preload("res://sources/pics/l2/note.png")
+const LIBRARY_PHOTO_BACKGROUND := preload("res://sources/pics/l2/s2.png")
 const BOY_AVATAR := preload("res://sources/pics/boy.png")
 const GIRL_AVATAR := preload("res://sources/pics/girl.png")
 const WRAPPED_PACKAGE := preload("res://sources/pics/clue_wrapped_package.png")
@@ -140,6 +141,15 @@ var library_found_clues: Dictionary = {}
 var library_score := 60
 var library_stage_one_completed := false
 var library_key_modal_open := false
+var library_stage_two_started := false
+var library_photo_seen := false
+var library_stage_two_solved := false
+var library_photo_active := false
+var library_photo_time_left := 0.0
+var library_timer_label: Label
+var library_choice_panel: PanelContainer
+var library_choice_status: Label
+var library_choice_buttons: Array[Button] = []
 
 # The menu artwork contains all visual buttons. These rectangles are only the
 # transparent touch targets aligned to that 1280×720 artwork.
@@ -675,6 +685,11 @@ func load_library_progress() -> void:
 	library_score = int(library_case_data.get("initial_score", 60))
 	library_found_clues.clear()
 	library_stage_one_completed = false
+	library_stage_two_started = false
+	library_photo_seen = false
+	library_stage_two_solved = false
+	library_photo_active = false
+	library_photo_time_left = 0.0
 	if not FileAccess.file_exists(LIBRARY_SAVE_PATH):
 		return
 	var file := FileAccess.open(LIBRARY_SAVE_PATH, FileAccess.READ)
@@ -692,6 +707,9 @@ func load_library_progress() -> void:
 		for clue_id in clue_ids:
 			library_found_clues[str(clue_id)] = true
 	library_stage_one_completed = bool(data.get("stage_1_completed", false))
+	library_stage_two_started = bool(data.get("stage_2_started", false))
+	library_photo_seen = bool(data.get("stage_2_photo_seen", false))
+	library_stage_two_solved = bool(data.get("stage_2_solved", false))
 
 func save_library_progress() -> void:
 	var clue_ids: Array[String] = []
@@ -706,6 +724,9 @@ func save_library_progress() -> void:
 		"score": library_score,
 		"clue_ids": clue_ids,
 		"stage_1_completed": library_stage_one_completed,
+		"stage_2_started": library_stage_two_started,
+		"stage_2_photo_seen": library_photo_seen,
+		"stage_2_solved": library_stage_two_solved,
 		"case_status": "investigating"
 	}))
 
@@ -736,6 +757,7 @@ func build_library_case_ui() -> void:
 	library_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	library_layer.mouse_filter = Control.MOUSE_FILTER_PASS
 	add_child(library_layer)
+	library_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	library_background = TextureRect.new()
 	library_background.layout_direction = Control.LAYOUT_DIRECTION_LTR
 	library_background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -744,12 +766,14 @@ func build_library_case_ui() -> void:
 	library_background.z_index = -20
 	library_background.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	library_layer.add_child(library_background)
+	library_background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	build_library_header()
 	build_library_footer()
 	build_library_dialogue()
 	build_library_modal()
 	build_library_notebook()
 	build_library_notebook_confirmation()
+	build_library_photo_timer()
 
 func build_library_header() -> void:
 	library_header = PanelContainer.new()
@@ -795,6 +819,14 @@ func build_library_footer() -> void:
 	library_footer.offset_bottom = -20
 	library_footer.add_theme_stylebox_override("panel", panel_style(Color("123444e6"), Color("68b8c8"), 14, 2))
 	library_layer.add_child(library_footer)
+	library_footer.anchor_left = 0.5
+	library_footer.anchor_top = 1.0
+	library_footer.anchor_right = 0.5
+	library_footer.anchor_bottom = 1.0
+	library_footer.offset_left = -440
+	library_footer.offset_top = -92
+	library_footer.offset_right = 440
+	library_footer.offset_bottom = -20
 	var row := HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.add_theme_constant_override("separation", 16)
@@ -832,6 +864,14 @@ func build_library_dialogue() -> void:
 	library_dialogue_panel.offset_bottom = -187
 	library_dialogue_panel.add_theme_stylebox_override("panel", panel_style(Color("123444ed"), Color("68b8c8"), 18, 3))
 	library_layer.add_child(library_dialogue_panel)
+	library_dialogue_panel.anchor_left = 0.5
+	library_dialogue_panel.anchor_top = 1.0
+	library_dialogue_panel.anchor_right = 0.5
+	library_dialogue_panel.anchor_bottom = 1.0
+	library_dialogue_panel.offset_left = -460
+	library_dialogue_panel.offset_top = -365
+	library_dialogue_panel.offset_right = 460
+	library_dialogue_panel.offset_bottom = -187
 	var content := VBoxContainer.new()
 	content.add_theme_constant_override("separation", 10)
 	library_dialogue_panel.add_child(content)
@@ -870,6 +910,14 @@ func build_library_modal() -> void:
 	library_modal.add_theme_stylebox_override("panel", panel_style(Color("123444f2"), Color("78cfda"), 18, 3))
 	library_modal.hide()
 	library_layer.add_child(library_modal)
+	library_modal.anchor_left = 0.5
+	library_modal.anchor_top = 0.5
+	library_modal.anchor_right = 0.5
+	library_modal.anchor_bottom = 0.5
+	library_modal.offset_left = -350
+	library_modal.offset_top = -155
+	library_modal.offset_right = 350
+	library_modal.offset_bottom = 155
 	var content := VBoxContainer.new()
 	content.add_theme_constant_override("separation", 14)
 	library_modal.add_child(content)
@@ -900,6 +948,7 @@ func build_library_notebook() -> void:
 	library_notebook.mouse_filter = Control.MOUSE_FILTER_STOP
 	library_notebook.hide()
 	library_layer.add_child(library_notebook)
+	library_notebook.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var background := TextureRect.new()
 	background.layout_direction = Control.LAYOUT_DIRECTION_LTR
 	background.texture = LIBRARY_NOTEBOOK_BACKGROUND
@@ -908,26 +957,32 @@ func build_library_notebook() -> void:
 	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	library_notebook.add_child(background)
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var title := Label.new()
 	title.text = "دفتر کارآگاه"
 	title.layout_direction = Control.LAYOUT_DIRECTION_LTR
-	title.position = Vector2(800, 145)
+	title.position = Vector2(672, 145)
 	title.size = Vector2(335, 46)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	title.text_direction = Control.TEXT_DIRECTION_RTL
 	title.add_theme_font_size_override("font_size", 30)
 	title.add_theme_color_override("font_color", Color("164350"))
 	library_notebook.add_child(title)
+	title.position = Vector2(672, 145)
+	title.size = Vector2(335, 46)
 	library_notebook_text = Label.new()
 	library_notebook_text.layout_direction = Control.LAYOUT_DIRECTION_LTR
-	library_notebook_text.position = Vector2(790, 225)
+	library_notebook_text.position = Vector2(662, 225)
 	library_notebook_text.size = Vector2(380, 215)
 	library_notebook_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	library_notebook_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	library_notebook_text.text_direction = Control.TEXT_DIRECTION_RTL
 	library_notebook_text.add_theme_font_size_override("font_size", 24)
+	library_notebook_text.add_theme_constant_override("line_spacing", -3)
 	library_notebook_text.add_theme_color_override("font_color", Color("214d57"))
 	library_notebook.add_child(library_notebook_text)
+	library_notebook_text.position = Vector2(662, 225)
+	library_notebook_text.size = Vector2(380, 215)
 	library_notebook_close = Button.new()
 	library_notebook_close.text = "بستن دفتر"
 	library_notebook_close.layout_direction = Control.LAYOUT_DIRECTION_LTR
@@ -952,6 +1007,14 @@ func build_library_notebook_confirmation() -> void:
 	library_notebook_confirmation.add_theme_stylebox_override("panel", panel_style(Color("123444f2"), Color("78cfda"), 18, 3))
 	library_notebook_confirmation.hide()
 	library_layer.add_child(library_notebook_confirmation)
+	library_notebook_confirmation.anchor_left = 0.5
+	library_notebook_confirmation.anchor_top = 0.5
+	library_notebook_confirmation.anchor_right = 0.5
+	library_notebook_confirmation.anchor_bottom = 0.5
+	library_notebook_confirmation.offset_left = -320
+	library_notebook_confirmation.offset_top = -145
+	library_notebook_confirmation.offset_right = 320
+	library_notebook_confirmation.offset_bottom = 145
 	var content := VBoxContainer.new()
 	content.add_theme_constant_override("separation", 14)
 	library_notebook_confirmation.add_child(content)
@@ -980,16 +1043,45 @@ func build_library_notebook_confirmation() -> void:
 	confirm.pressed.connect(confirm_library_notebook_cost)
 	buttons.add_child(confirm)
 
+func build_library_photo_timer() -> void:
+	library_timer_label = Label.new()
+	library_timer_label.layout_direction = Control.LAYOUT_DIRECTION_LTR
+	library_timer_label.position = Vector2(1080, 26)
+	library_timer_label.size = Vector2(170, 52)
+	library_timer_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	library_timer_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	library_timer_label.text_direction = Control.TEXT_DIRECTION_RTL
+	library_timer_label.add_theme_font_size_override("font_size", 25)
+	library_timer_label.add_theme_color_override("font_color", Color("f4ffff"))
+	library_timer_label.add_theme_stylebox_override("normal", panel_style(Color("123444e6"), Color("78cfda"), 14, 2))
+	library_timer_label.hide()
+	library_layer.add_child(library_timer_label)
+	library_timer_label.position = Vector2(1080, 26)
+	library_timer_label.size = Vector2(170, 52)
+
 func show_library_stage_one() -> void:
 	clear_library_hotspots()
 	library_modal.hide()
 	library_notebook.hide()
 	library_notebook_confirmation.hide()
+	library_photo_active = false
+	if library_timer_label:
+		library_timer_label.hide()
+	if library_choice_panel:
+		library_choice_panel.hide()
+	if library_stage_one_completed:
+		show_library_stage_two()
+		return
 	library_background.texture = LIBRARY_DIALOGUE_BACKGROUND
 	var stage: Dictionary = library_case_data.get("stage_1", {})
 	var dialogue_data: Dictionary = stage.get("dialogue", {})
 	library_dialogue_name.text = str(dialogue_data.get("speaker", "آقای براتی"))
 	library_dialogue_text.text = str(dialogue_data.get("text", ""))
+	if library_dialogue_next.pressed.is_connected(show_library_stage_two_photo):
+		library_dialogue_next.pressed.disconnect(show_library_stage_two_photo)
+	if not library_dialogue_next.pressed.is_connected(show_library_clue_scene):
+		library_dialogue_next.pressed.connect(show_library_clue_scene)
+	library_dialogue_next.text = "بررسی ویترین"
 	library_dialogue_panel.show()
 	library_prompt_label.text = "بیا از آقای براتی بپرسیم چه شده."
 	update_library_score_label()
@@ -1015,6 +1107,7 @@ func build_library_stage_hotspots() -> void:
 		var size_data: Array = hotspot.get("size", [0.1, 0.1])
 		var button := Button.new()
 		button.layout_direction = Control.LAYOUT_DIRECTION_LTR
+		button.top_level = true
 		button.flat = true
 		button.z_index = -5
 		button.tooltip_text = "بررسی: " + str(hotspot.get("title", ""))
@@ -1027,8 +1120,11 @@ func build_library_stage_hotspots() -> void:
 		marker.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		marker.add_theme_stylebox_override("panel", panel_style(Color("ffbf4d"), Color("fff1b0"), 12, 2))
 		button.add_child(marker)
+		marker.position = button.size * 0.5 - Vector2(12, 12)
 		library_layer.add_child(button)
-		button.position = Vector2(float(position_data[0]) * 1280.0, float(position_data[1]) * 720.0) - button.size * 0.5
+		# A top-level hotspot keeps its 1280×720 hit rectangle independent from
+		# Android's RTL layout pass. Set it only after it has a parent.
+		button.global_position = Vector2(float(position_data[0]) * 1280.0, float(position_data[1]) * 720.0) - button.size * 0.5
 		if bool(hotspot.get("is_clue", false)) and library_found_clues.has(str(hotspot.get("id", ""))):
 			button.disabled = true
 			button.hide()
@@ -1092,7 +1188,11 @@ func open_library_notebook() -> void:
 				var hotspot: Dictionary = hotspot_data
 				if library_found_clues.has(str(hotspot.get("id", ""))):
 					entries.append("• " + str(hotspot.get("notebook_entry", hotspot.get("description", ""))))
-		library_notebook_text.text = "\n\n".join(entries)
+		var stage_two: Dictionary = library_case_data.get("stage_2", {})
+		var stage_two_clue: Dictionary = stage_two.get("clue", {})
+		if library_found_clues.has(str(stage_two_clue.get("id", ""))):
+			entries.append("• " + str(stage_two_clue.get("notebook_entry", "")))
+		library_notebook_text.text = "\n".join(entries)
 	else:
 		library_notebook_text.text = "هنوز سرنخی پیدا نکردی. ویترین را نگاه کن."
 	library_header.hide()
@@ -1107,6 +1207,159 @@ func close_library_notebook() -> void:
 	if library_stage_one_completed:
 		var stage: Dictionary = library_case_data.get("stage_1", {})
 		library_prompt_label.text = str(stage.get("completion_text", "مرحلهٔ اول کامل شد."))
+		if not library_stage_two_started:
+			show_library_stage_two()
+
+func show_library_stage_two() -> void:
+	clear_library_hotspots()
+	library_modal.hide()
+	library_notebook_confirmation.hide()
+	library_photo_active = false
+	if library_timer_label:
+		library_timer_label.hide()
+	if library_choice_panel:
+		library_choice_panel.hide()
+	library_stage_two_started = true
+	save_library_progress()
+	if library_stage_two_solved:
+		library_background.texture = LIBRARY_CLUE_BACKGROUND
+		library_dialogue_panel.hide()
+		library_prompt_label.text = "سرنخ کیف قهوه‌ای در دفتر ثبت شد."
+		return
+	if library_photo_seen:
+		show_library_stage_two_question()
+		return
+	var stage: Dictionary = library_case_data.get("stage_2", {})
+	var dialogue_data: Dictionary = stage.get("dialogue", {})
+	library_background.texture = LIBRARY_CLUE_BACKGROUND
+	library_dialogue_name.text = str(dialogue_data.get("speaker", "خانم شریفی"))
+	library_dialogue_text.text = str(dialogue_data.get("text", ""))
+	if library_dialogue_next.pressed.is_connected(show_library_clue_scene):
+		library_dialogue_next.pressed.disconnect(show_library_clue_scene)
+	if not library_dialogue_next.pressed.is_connected(show_library_stage_two_photo):
+		library_dialogue_next.pressed.connect(show_library_stage_two_photo)
+	library_dialogue_next.text = "دیدن عکس"
+	library_dialogue_panel.show()
+	library_prompt_label.text = "به عکس خانم شریفی خوب نگاه کن."
+
+func show_library_stage_two_photo() -> void:
+	library_dialogue_panel.hide()
+	if library_choice_panel:
+		library_choice_panel.hide()
+	var stage: Dictionary = library_case_data.get("stage_2", {})
+	library_background.texture = LIBRARY_PHOTO_BACKGROUND
+	library_photo_time_left = float(stage.get("photo_seconds", 10))
+	library_photo_active = true
+	library_timer_label.show()
+	update_library_photo_timer()
+	library_prompt_label.text = "عکس را با دقت ببین!"
+
+func update_library_photo_timer() -> void:
+	if library_timer_label:
+		library_timer_label.text = "زمان: %d" % ceili(library_photo_time_left)
+
+func finish_library_stage_two_photo() -> void:
+	library_photo_active = false
+	library_photo_seen = true
+	save_library_progress()
+	if library_timer_label:
+		library_timer_label.hide()
+	show_library_stage_two_question()
+
+func show_library_stage_two_question() -> void:
+	library_background.texture = LIBRARY_CLUE_BACKGROUND
+	library_dialogue_panel.hide()
+	var stage: Dictionary = library_case_data.get("stage_2", {})
+	library_prompt_label.text = "عکس بسته شد. حالا جواب بده."
+	build_library_choice_panel(str(stage.get("question", "")), stage.get("answers", []))
+
+func build_library_choice_panel(question: String, answers) -> void:
+	if library_choice_panel:
+		library_choice_panel.queue_free()
+		library_choice_panel = null
+	library_choice_buttons.clear()
+	library_choice_panel = PanelContainer.new()
+	library_choice_panel.layout_direction = Control.LAYOUT_DIRECTION_LTR
+	library_choice_panel.anchor_left = 0.5
+	library_choice_panel.anchor_top = 0.5
+	library_choice_panel.anchor_right = 0.5
+	library_choice_panel.anchor_bottom = 0.5
+	library_choice_panel.offset_left = -455
+	library_choice_panel.offset_top = -205
+	library_choice_panel.offset_right = 455
+	library_choice_panel.offset_bottom = 205
+	library_choice_panel.add_theme_stylebox_override("panel", panel_style(Color("123444f2"), Color("78cfda"), 18, 3))
+	library_layer.add_child(library_choice_panel)
+	library_choice_panel.anchor_left = 0.5
+	library_choice_panel.anchor_top = 0.5
+	library_choice_panel.anchor_right = 0.5
+	library_choice_panel.anchor_bottom = 0.5
+	library_choice_panel.offset_left = -455
+	library_choice_panel.offset_top = -205
+	library_choice_panel.offset_right = 455
+	library_choice_panel.offset_bottom = 205
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 12)
+	library_choice_panel.add_child(content)
+	var title := Label.new()
+	title.text = "معمای عکس"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	title.text_direction = Control.TEXT_DIRECTION_RTL
+	title.add_theme_font_size_override("font_size", 30)
+	title.add_theme_color_override("font_color", Color("a8e1e9"))
+	content.add_child(title)
+	var question_label := Label.new()
+	question_label.text = question
+	question_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	question_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	question_label.text_direction = Control.TEXT_DIRECTION_RTL
+	question_label.add_theme_font_size_override("font_size", 25)
+	question_label.add_theme_color_override("font_color", Color("f4ffff"))
+	content.add_child(question_label)
+	if answers is Array:
+		for answer_data in answers:
+			if not answer_data is Dictionary:
+				continue
+			var answer: Dictionary = answer_data
+			var choice := Button.new()
+			choice.layout_direction = Control.LAYOUT_DIRECTION_LTR
+			choice.text = str(answer.get("text", ""))
+			choice.custom_minimum_size = Vector2(680, 44)
+			choice.text_direction = Control.TEXT_DIRECTION_RTL
+			choice.alignment = HORIZONTAL_ALIGNMENT_RIGHT
+			choice.add_theme_font_size_override("font_size", 20)
+			choice.pressed.connect(answer_library_stage_two.bind(bool(answer.get("correct", false))))
+			content.add_child(choice)
+			library_choice_buttons.append(choice)
+	library_choice_status = Label.new()
+	library_choice_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	library_choice_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	library_choice_status.text_direction = Control.TEXT_DIRECTION_RTL
+	library_choice_status.add_theme_font_size_override("font_size", 21)
+	library_choice_status.add_theme_color_override("font_color", Color("fff0a5"))
+	content.add_child(library_choice_status)
+	library_choice_panel.show()
+	library_choice_panel.move_to_front()
+
+func answer_library_stage_two(is_correct: bool) -> void:
+	if library_stage_two_solved:
+		return
+	var stage: Dictionary = library_case_data.get("stage_2", {})
+	if not is_correct:
+		library_score = maxi(0, library_score - 1)
+		library_choice_status.text = str(stage.get("wrong_feedback", "پاسخ درست نبود."))
+		save_library_progress()
+		update_library_score_label()
+		return
+	library_stage_two_solved = true
+	var clue: Dictionary = stage.get("clue", {})
+	library_found_clues[str(clue.get("id", "brown_bag_near_display"))] = true
+	for choice in library_choice_buttons:
+		choice.disabled = true
+	library_choice_status.text = str(stage.get("correct_feedback", "آفرین!")) + " سرنخ در دفتر ثبت شد."
+	save_library_progress()
+	update_library_score_label()
+
 
 func update_library_score_label() -> void:
 	if library_score_label:
@@ -1114,12 +1367,15 @@ func update_library_score_label() -> void:
 	if library_clue_count_label:
 		var stage: Dictionary = library_case_data.get("stage_1", {})
 		var clue_total := 0
+		var found_stage_one_clues := 0
 		var hotspots = stage.get("hotspots", [])
 		if hotspots is Array:
 			for hotspot_data in hotspots:
 				if hotspot_data is Dictionary and bool(hotspot_data.get("is_clue", false)):
 					clue_total += 1
-		library_clue_count_label.text = "سرنخ‌ها: %d از %d" % [library_found_clues.size(), clue_total]
+					if library_found_clues.has(str(hotspot_data.get("id", ""))):
+						found_stage_one_clues += 1
+		library_clue_count_label.text = "سرنخ‌ها: %d از %d" % [found_stage_one_clues, clue_total]
 
 func library_all_stage_one_clues_found() -> bool:
 	var stage: Dictionary = library_case_data.get("stage_1", {})
@@ -1381,6 +1637,11 @@ func _process(delta: float) -> void:
 	for button in hotspot_buttons:
 		if not button.disabled:
 			button.modulate = Color(1.0, 0.96, 0.24, 0.62 + (sin(pulse_time * 2.4) + 1.0) * 0.16)
+	if library_photo_active:
+		library_photo_time_left = maxf(0.0, library_photo_time_left - delta)
+		update_library_photo_timer()
+		if library_photo_time_left <= 0.0:
+			finish_library_stage_two_photo()
 
 func _input(event: InputEvent) -> void:
 	# The visual card buttons are painted into the menu background. Some Android

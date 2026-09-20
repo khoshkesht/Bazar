@@ -61,6 +61,7 @@ var bazaar_completed := false
 var bazaar_stars := 0
 var library_completed := false
 var library_stars := 0
+var library_awarded_score := 0
 var player_name := ""
 var player_gender := ""
 var selected_gender := ""
@@ -73,6 +74,7 @@ var main_library_star_label: Label
 var main_avatar: TextureRect
 var name_prompt: PanelContainer
 var locked_case_notice: PanelContainer
+var library_replay_confirmation: PanelContainer
 var name_input: LineEdit
 var name_error: Label
 var boy_gender_button: Button
@@ -397,6 +399,7 @@ func build_main_menu() -> void:
 	update_main_menu_stats()
 	build_name_prompt()
 	build_locked_case_notice()
+	build_library_replay_confirmation()
 
 func build_locked_case_notice() -> void:
 	locked_case_notice = PanelContainer.new()
@@ -436,6 +439,56 @@ func build_locked_case_notice() -> void:
 	close.add_theme_font_size_override("font_size", 24)
 	close.pressed.connect(func() -> void: locked_case_notice.hide())
 	content.add_child(close)
+
+func build_library_replay_confirmation() -> void:
+	library_replay_confirmation = PanelContainer.new()
+	library_replay_confirmation.layout_direction = Control.LAYOUT_DIRECTION_LTR
+	library_replay_confirmation.anchor_left = 0.5
+	library_replay_confirmation.anchor_top = 0.5
+	library_replay_confirmation.anchor_right = 0.5
+	library_replay_confirmation.anchor_bottom = 0.5
+	library_replay_confirmation.offset_left = -340
+	library_replay_confirmation.offset_top = -145
+	library_replay_confirmation.offset_right = 340
+	library_replay_confirmation.offset_bottom = 145
+	library_replay_confirmation.add_theme_stylebox_override("panel", panel_style(Color("123444f2"), Color("78cfda"), 18, 3))
+	library_replay_confirmation.hide()
+	main_menu.add_child(library_replay_confirmation)
+	library_replay_confirmation.anchor_left = 0.5
+	library_replay_confirmation.anchor_top = 0.5
+	library_replay_confirmation.anchor_right = 0.5
+	library_replay_confirmation.anchor_bottom = 0.5
+	library_replay_confirmation.offset_left = -340
+	library_replay_confirmation.offset_top = -145
+	library_replay_confirmation.offset_right = 340
+	library_replay_confirmation.offset_bottom = 145
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 14)
+	library_replay_confirmation.add_child(content)
+	var message := Label.new()
+	message.text = "پروندهٔ دزد کتابخانه را حل کرده‌ای. می‌خواهی دوباره بازی کنی؟ امتیاز و پیشرفت قبلی پاک می‌شود."
+	message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	message.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	message.text_direction = Control.TEXT_DIRECTION_RTL
+	message.add_theme_font_size_override("font_size", 25)
+	message.add_theme_color_override("font_color", Color("f4ffff"))
+	content.add_child(message)
+	var buttons := HBoxContainer.new()
+	buttons.alignment = BoxContainer.ALIGNMENT_CENTER
+	buttons.add_theme_constant_override("separation", 16)
+	content.add_child(buttons)
+	var cancel := Button.new()
+	cancel.text = "فعلاً نه"
+	cancel.custom_minimum_size = Vector2(180, 46)
+	cancel.add_theme_font_size_override("font_size", 21)
+	cancel.pressed.connect(func() -> void: library_replay_confirmation.hide())
+	buttons.add_child(cancel)
+	var confirm := Button.new()
+	confirm.text = "دوباره بازی می‌کنم"
+	confirm.custom_minimum_size = Vector2(220, 46)
+	confirm.add_theme_font_size_override("font_size", 21)
+	confirm.pressed.connect(confirm_library_replay)
+	buttons.add_child(confirm)
 
 func show_locked_case_notice() -> void:
 	locked_case_notice.show()
@@ -631,6 +684,7 @@ func load_player_progress() -> void:
 	bazaar_stars = clampi(int(data.get("bazaar_stars", 0)), 0, 5)
 	library_completed = bool(data.get("library_completed", false))
 	library_stars = clampi(int(data.get("library_stars", 0)), 0, 5)
+	library_awarded_score = maxi(0, int(data.get("library_awarded_score", 0)))
 	if bazaar_completed and bazaar_stars == 0:
 		bazaar_stars = clampi(roundi(float(earned_coins) / 50.0 * 5.0), 1, 5)
 		if completed_cases == 1:
@@ -650,7 +704,8 @@ func save_player_progress() -> void:
 		"bazaar_completed": bazaar_completed,
 		"bazaar_stars": bazaar_stars,
 		"library_completed": library_completed,
-		"library_stars": library_stars
+		"library_stars": library_stars,
+		"library_awarded_score": library_awarded_score
 	}
 	file.store_string(JSON.stringify(data))
 
@@ -661,6 +716,8 @@ func show_main_menu() -> void:
 	home_button.hide()
 	game_footer.hide()
 	modal.hide()
+	if library_replay_confirmation:
+		library_replay_confirmation.hide()
 	for hotspot in hotspot_buttons:
 		hotspot.hide()
 	update_main_menu_stats()
@@ -704,12 +761,24 @@ func begin_library_case() -> void:
 		return
 	active_case_id = "library_002"
 	load_library_progress()
+	if library_case_completed:
+		library_replay_confirmation.show()
+		library_replay_confirmation.move_to_front()
+		return
+	start_library_case_session()
+
+func start_library_case_session() -> void:
 	main_menu.hide()
 	hide_bazaar_case_ui()
 	build_library_case_ui()
 	library_layer.show()
 	library_layer.move_to_front()
 	show_library_stage_one()
+
+func confirm_library_replay() -> void:
+	library_replay_confirmation.hide()
+	reset_library_case_for_replay()
+	start_library_case_session()
 
 func load_library_case_data() -> bool:
 	if not library_case_data.is_empty():
@@ -799,6 +868,51 @@ func load_library_progress() -> void:
 	library_suspect_solved = bool(data.get("suspect_solved", false))
 	library_deduction_solved = bool(data.get("deduction_solved", false))
 	library_case_completed = str(data.get("case_status", "")) == "completed"
+
+func reset_library_case_for_replay() -> void:
+	if library_completed:
+		var prior_award := library_awarded_score if library_awarded_score > 0 else library_score
+		completed_cases = maxi(0, completed_cases - 1)
+		earned_stars = maxi(0, earned_stars - library_stars)
+		earned_coins = maxi(0, earned_coins - prior_award)
+		library_completed = false
+		library_stars = 0
+		library_awarded_score = 0
+		save_player_progress()
+	library_score = int(library_case_data.get("initial_score", 60))
+	library_found_clues.clear()
+	library_stage_one_completed = false
+	library_key_modal_open = false
+	library_stage_two_started = false
+	library_photo_seen = false
+	library_stage_two_solved = false
+	library_stage_three_started = false
+	library_camera_count_solved = false
+	library_camera_frame_solved = false
+	library_stage_four_started = false
+	library_camera_bag_match_solved = false
+	library_stage_four_view_seen = false
+	library_stage_five_started = false
+	library_map_seen = false
+	library_stage_six_started = false
+	library_route_solved = false
+	library_stage_seven_started = false
+	library_locker_27_opened = false
+	library_locker_confirmation_open = false
+	library_stage_eight_started = false
+	library_visitor_card_found = false
+	library_visitor_card_modal_open = false
+	library_evidence_review_active = false
+	library_evidence_review_seen = false
+	library_stage_ten_started = false
+	library_suspect_solved = false
+	library_deduction_solved = false
+	library_selected_evidence_ids.clear()
+	library_case_completed = false
+	library_photo_active = false
+	library_photo_time_left = 0.0
+	library_timed_scene = ""
+	save_library_progress()
 
 func save_library_progress() -> void:
 	var clue_ids: Array[String] = []
@@ -2070,6 +2184,7 @@ func show_library_case_complete() -> void:
 	if first_completion:
 		library_completed = true
 		library_stars = clampi(roundi(float(library_score) / 60.0 * 5.0), 1, 5)
+		library_awarded_score = library_score
 		completed_cases = clampi(completed_cases + 1, 0, 5)
 		earned_stars += library_stars
 		earned_coins += library_score
